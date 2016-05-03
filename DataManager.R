@@ -1,0 +1,348 @@
+
+## Returns a string of the form yyyy-mm-dd which is deltaCount number of
+## dateDelta time periods in the past from today. E.g. if defaults are used
+## (dateDelta="years", deltaCount=10) will return the date that is 10 years
+## ago from today.
+## 
+## agoFromWhen - A string of the form yyyy-mm-dd to start counting back from.
+##               If not set, will default to the current day.
+agoFrom <- function(dateDelta="years", deltaCount=10, agoFromWhen="today") {
+    yyyy.mm.dd <- NULL
+    if(agoFromWhen == "today") {
+        if(dateDelta == "years") {
+            yyyy.mm.dd <- unlist(strsplit(as.character(Sys.Date()), "-"))
+        }
+        # TODO process requests for dateDelta="months"
+        # TODO process requests for dateDelta="weeks"
+        # TODO process requests for dateDelta="days"
+    } else {
+        yyyy.mm.dd <- unlist(strsplit(agoFromWhen, "-"))
+    }
+    
+    # increment years the easy way
+    if(dateDelta == "years") {
+        requestedYear <- as.integer(yyyy.mm.dd[1]) - deltaCount
+        yyyy.mm.dd <- paste0(as.character(requestedYear), "-",
+                             yyyy.mm.dd[2], "-", yyyy.mm.dd[3])
+    }
+    
+    
+    return(yyyy.mm.dd)
+}
+
+## Returns the number of query periods between startDate and endDate where
+## the number of days in all but the most recent (last) query period are
+## maxAllowableDays.  The most recent period will usually be less than
+## maxAllowableDays because it will typically be a partial period.
+getQueryPeriods <- function(startDate, endDate, maxAllowableDays) {
+    queryDays <- ceiling(
+                     as.integer(
+                         difftime(as.Date(endDate),
+                         as.Date(startDate),
+                         units="days")
+                     ) / maxAllowableDays)
+    
+    return(queryDays)
+}
+
+## Returns the number of completed years between startDate and endDate where:
+## startDate - date further back in time from endDate
+## endDate - further forward in time than startDate
+getCompletedYearsBetweenDates <- function(startDate, endDate) {
+    d1 <- as.Date(startDate)
+    d2 <- as.Date(endDate)
+    #http://stackoverflow.com/questions/19687334/is-it-possible-to-count-the-distance-between-two-dates-in-months-or-years/19687995#19687995
+    completedYears <- length(seq(from=d1, to=d2, by='year')) - 1
+    
+    return(completedYears)
+}
+
+## This function is used to break a date range into a list of component date
+## ranges.  It returns a list of character vectors where each vector contains
+## two strings of the form yyyy-mm-dd.
+##
+## The first string in each character vector is the starting date of a query
+## period.  The second is the ending date of the period.
+## 
+## If the number of days between startDate and endDate is less than
+## maxAllowableDays, then a list with a single vector containing startDate and
+## endDate will be returned.
+##
+## If the number of days between startDate and endDate is greater than
+## maxAllowableDays, then a list with 2 or more vectors will be returned.  Each
+## vector in this case will span at most a maxAllowableDays number of days in a
+## portion of the range between startDate and endDate.
+## 
+getDateRanges <- function(startDate, endDate,
+                          maxAllowableDays=360,
+                          maxAllowableYears=10) {
+    dateIntervals <- list(c(start=startDate, end=endDate))
+    
+    if(getCompletedYearsBetweenDates(startDate, endDate) >= maxAllowableYears) {
+        adjustedStart <- as.POSIXlt(as.Date(endDate))
+        adjustedStart$year <- adjustedStart$year - 10
+        adjustedStart <- as.Date(adjustedStart)
+        adjustedStart <- as.character(adjustedStart)
+        dateIntervals <- list(c(start=adjustedStart, end=endDate))
+        startDate <- adjustedStart
+        queryPeriods <- getQueryPeriods(startDate, endDate, maxAllowableDays)
+    }
+    
+    queryPeriods <- getQueryPeriods(startDate, endDate, maxAllowableDays)
+    
+    if(queryPeriods > 1) {
+        firstEnd <- as.Date(startDate) + maxAllowableDays
+        dateIntervals <- list(c(start=startDate, end=as.character(firstEnd)))
+        for(i in 2:queryPeriods) {
+            dateInterval <- dateIntervals[[i-1]]
+            nextStart <- as.Date(dateInterval["end"]) + 1
+            newEnd <- nextStart + maxAllowableDays
+            if(i >= queryPeriods) {
+                dateIntervals[[i]] <- c(start=as.character(nextStart),
+                                        end=endDate)
+            }
+            else {
+                dateIntervals[[i]] <- c(start=as.character(nextStart),
+                                        end=as.character(newEnd))
+            }
+            
+        }
+    }
+    
+    return(dateIntervals)
+}
+
+## Makes a single REST call to get historical stock prices from yahoo finance 
+## and returns a dataframe with the Date, High, Low, open, close and volume for 
+## the symbol passed in over the requested date range.
+##
+## IF NO DATA COULD BE FOUND FOR TICKER, AN EMPTY DATAFRAME WILL BE RETURNED!
+##
+## ticker - ticker symbol to get quotes for
+## startYYYY_MM_DD - starting date for the quote in format yyyy-mm-dd
+## endYYYY_MM_DD - ending date for the quote in format yyyy-mm-dd
+## 
+## YQL queries like this were entered into the YQL console to generate
+## the REST call:
+##
+## select * from yahoo.finance.historicaldata where symbol = "YHOO" and
+##          startDate = "2015-01-01" and endDate = "2015-12-01"
+##
+## Resulting generated call looked like this:
+##
+## https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.historicaldata%20where%20symbol%20%3D%20%22AAPL%22%20and%20startDate%20%3D%20%222015-01-01%22%20and%20endDate%20%3D%20%222015-12-01%22&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
+## IMPORTANT: HAD TO CHANGE https TO http FOR THE CALL TO xmlTreeParse TO WORK!
+getSinglePeriodYqlQuotes <- function(ticker, startYYYY_MM_DD,
+                                     endYYYY_MM_DD, dataFrame=NULL) {
+    #install.packages("XML"); install.packages("dplyr")
+    cat("getSinglePeriodYqlQuotes parameters:", ticker, startYYYY_MM_DD, endYYYY_MM_DD, dataFrame)
+    library(XML)
+    library(dplyr)
+    # change https to http stackoverflow.com/questions/23584514/23584751#23584751
+    baseQuery <- paste0("http://query.yahooapis.com/v1/public/yql",
+                        "?q=select%20*%20from%20yahoo.finance.historicaldata")
+    symbolClause <- paste0("%20where%20symbol%20%3D%20%22", ticker, "%22%20and")
+    dateClause <- paste0("%20startDate%20%3D%20%22", startYYYY_MM_DD,
+                         "%22%20and%20endDate%20%3D%20%22", endYYYY_MM_DD)
+    yqlSuffix <- paste0("%22&diagnostics=true",
+                        "&env=store%3A%2F%2Fdatatables.org",
+                        "%2Falltableswithkeys")
+    
+    yqlCall <- paste0(baseQuery, symbolClause, dateClause, yqlSuffix)
+    
+    doc <- xmlTreeParse(yqlCall, useInternalNodes = TRUE)
+    rootNode <- xmlRoot(doc)
+    quotes <- xpathSApply(rootNode, "//quote")
+    if(length(quotes) > 0) {
+        High <- as.numeric(xpathSApply(rootNode, "//High", xmlValue))
+        Low <- as.numeric(xpathSApply(rootNode, "//Low", xmlValue))
+        Open <- as.numeric(xpathSApply(rootNode, "//Open", xmlValue))
+        Close <- as.numeric(xpathSApply(rootNode, "//Close", xmlValue))
+        Volume <- as.numeric(xpathSApply(rootNode, "//Volume", xmlValue))
+        date.format <- "%Y-%m-%d"
+        Date <- as.Date(xpathSApply(rootNode, "//Date", xmlValue), date.format)
+        # If we pass in a populated dataframe, assume we need to append to it
+        if(is.null(dataFrame)) {
+            df <- data.frame(Symbol=ticker, Date=as.character(Date),
+                             High, Low, Open, Close, Volume)
+            df <- arrange(df, Date)
+        }
+        else {
+            temp <- data.frame(Symbol=ticker, Date=as.character(Date),
+                               High, Low, Open, Close, Volume)
+            temp <- arrange(temp, Date)
+            df <- rbind(dataFrame, temp)
+        }
+    }
+    else {
+        # no quotes came back, return an empty data frame
+        df <- data.frame()
+    }
+    
+    return(df)
+}
+
+## Returns quote data from web service (finance.yahoo by default) for a given
+## ticker symbol ticker from startDate to endDate inclusive.
+##
+## This function calls getDateRanges to break up the requests to the data
+## service (e.g. finance.yahoo) into manageable chunks.
+##
+## ticker - string | ticker symbol for requested quote (e.g. AAPL or JNJ)
+## startDate - string | start/first date for requested price quotes
+## endDate - string | end/last date for requested price quotes
+## service - service from which to obtain quotes (finance.yahoo by default)
+getQuotesFromService <- function(ticker, startDate, endDate,
+                                 service="finance.yahoo") {
+    library(XML)
+    cat("getQuotesFromService parameters:\n",
+        "startDate=", startDate,
+        ", endDate=", endDate,
+        ", service=", service, "\n")
+    quotes <- NULL
+    if(service == "finance.yahoo") {
+        dateRanges <- getDateRanges(startDate, endDate)
+        quoteCount <- length(dateRanges)
+        sdate <- dateRanges[[1]]["start"]
+        edate <- dateRanges[[1]]["end"]
+        quotes <- getSinglePeriodYqlQuotes(ticker, sdate, edate)
+        if(quoteCount > 1) {
+            for(i in 2:quoteCount) {
+                sdate <- dateRanges[[i]]["start"]
+                edate <- dateRanges[[i]]["end"]
+                subQuotes <- getSinglePeriodYqlQuotes(ticker, sdate, edate)
+                if(nrow(subQuotes) > 0) {
+                    quotes <- rbind(quotes, subQuotes)
+                }
+            }
+        }
+    }
+    # else if(service == "some other service") { lines to process quotes here }
+    
+    return(quotes)
+}
+
+## Returns a dataframe with quotes between startDate and endDate
+## for ticker symbol ticker.  If query for ticker has not been made, function
+## will query and write a file to ./data/[ticker].csv which will be read when
+## future queries for ticker symbol ticker are made.
+##
+## If the file ./data/[ticker].csv exists and contains the requested data, data
+## -frame will be returned, but no query to the quote service will be made.
+##
+## If the file ./data/[ticker].csv exists but does NOT contain the requested
+## data, a query to the quote service will be made for the missing data as long
+## as the request doesn't go back further than maxAllowableYears from today.
+##
+## ticker - string | ticker symbol for requested quote (e.g. AAPL or JNJ)
+## startDate - string | start/first date for requested price quotes, default
+##             is 10 years ago from todays date
+## endDate - string | end/last date for requested price quotes, default is today
+## maxAllowableYears - max # of years of quote history to request from service,
+##                     default is 10.
+getStockQuotes <- function(ticker,
+                           startDate=agoFromToday(), 
+                           endDate=as.character(Sys.Date()),
+                           maxAllowableYears=10) {
+    cat("getStockQuotes parameters:\n", "ticker=", ticker, "\n",
+        "startDate=", startDate, ", endDate=", endDate, "\n",
+        "maxAllowableYears=", maxAllowableYears, "\n")
+    # TODO handle invalid ticker
+    today <- as.character(Sys.Date())
+    quoteCols <- c("Symbol", "Date", "High", "Low", "Open", "Close", "Volume")
+    # check if data for the ticker has been downloaded already
+    tickerFile <- paste0("./data/", ticker, ".csv")
+    if(file.exists(tickerFile)) {
+        # ticker has been queried, does is have all the data requested?
+        existingQuotesAppended <- FALSE
+        quotes <- read.csv(tickerFile, as.is=TRUE) # data existing local
+        startDataDate <- as.Date(quotes$Date[1])
+        endDataDate <- as.Date(quotes$Date[nrow(quotes)])
+        # check if existing data is current enough
+        if(as.Date(endDate) > endDataDate) {
+            # requesting data that is not current enough, need to
+            # bring existing quotes up-to-date & append quote file
+            addStartDate <- as.character(endDataDate+1)
+            addData <- getQuotesFromService(ticker, addStartDate, endDate)
+            # leave quotes as-is if no add'l quotes come back 
+            if(nrow(addData) > 0) {
+                quotes <- rbind(quotes[,quoteCols], addData[,quoteCols])
+                existingQuotesAppended <- TRUE
+            }
+        }
+        # check if existing data goes back in time far enough
+        if(startDataDate > startDate) {
+            # existing data doesn't go back as far as being requested
+            if(getCompletedYearsBetweenDates(startDataDate, endDataDate) <
+               maxAllowableYears) {
+                # request doesn't go back futher than allowable # of years, so
+                # get more history: get max allowable amount of history while
+                # we're at it...
+                addData <- getQuotesFromService(ticker,
+                                                startDate,
+                                                as.character(startDataDate-1))
+                if(nrow(addData) > 0) {
+                    quotes <- rbind(addData[, -1], quotes)
+                    existingQuotesAppended <- TRUE
+                }
+            }
+            else {
+                # request is for too much history, go back as far as allowed
+                # by maxAllowableYears TODO
+                # 1) earliesAllowableStartDate <- maxAllowableYears from today
+                # 2) addData <- getQuotesFromService(ticker,
+                #                                    earliesAllowableStartDate),
+                #                                    startDataDate-1)
+                # 3) append addData to backend of quote data (earliest side)
+                # 4) existingQuotesAppended <- TRUE
+                # remaining code should handle the rest
+            }
+        }
+        if(existingQuotesAppended) {
+            # quotes has gotten data appended to it: write out updated quotes
+            filePath <- paste0("./data/", ticker, ".csv")
+            write.csv(quotes, filePath, row.names=FALSE)
+            cat("Completed writing updated quotes to ", filePath, "\n")
+        }
+    }
+    else {
+        # ticker has not been queried: query, write, then read written file
+        writeQuotes(tickers = c(ticker), startDate, endDate)
+        quotes <- read.csv(tickerFile, as.is=TRUE)
+    }
+    
+    return(quotes)
+}
+
+## Writes downloaded quotes to a csv file to be reread later
+## tickers - vector of ticker symbols
+## startDate - starting date for the quote in format yyyy-mm-dd
+## endDate - ending date for the quote in format yyyy-mm-dd
+writeQuotes <- function(tickers, startDate, endDate=as.character(Sys.Date())) {
+    for(i in 1:length(tickers)) {
+        quotes <- getQuotesFromService(tickers[i], startDate, endDate)
+        filePath <- paste0("./data/", tickers[i], ".csv")
+        write.csv(quotes, filePath, row.names=FALSE)
+        cat("Completed writing quotes to ", filePath, "\n")
+    }
+}
+
+## Lower risk way to get data for demo purposes. This reads a csv from the 
+## project repo rather than querying finance.yahoo for the data
+getDemoQuotes <- function(ticker, startDate,
+                          endDate=as.character(Sys.Date())) {
+    library(dplyr)
+    # Next 3 lines working running shiny thru loopback, but not deployed
+#     demoQuotesPrefix <- "http://raw.githubusercontent.com/MichaelSzczepaniak/"
+#     projectQuoteData <- "TradeAnalyzer/master/tranalyzer/data/"
+#     demoQuotesPrefix <- paste0(demoQuotesPrefix, projectQuoteData)
+    demoQuotesPrefix <- "./data/"
+    demoQuotesPath <- paste0(demoQuotesPrefix, ticker, ".csv")
+    
+    quotes <- read.csv(demoQuotesPath, stringsAsFactors = FALSE)[, -1]
+    quotes$Date <- as.Date(quotes$Date)
+    quotes <- filter(quotes, Date >= as.Date(startDate) & Date <=as.Date(endDate))
+    quotes$Date <- as.character(quotes$Date)
+    
+    return(quotes)
+}
