@@ -57,3 +57,12 @@ test.agoFrom.assigned <- function() {
     result <- checkIdentical(funResult, expectedYmd)
     cat("function output = expected value?", result, "| expected =", expectedYmd, "\n")
 }
+
+test.getQueryPeriods <- function() {
+    sDate <- "2016-04-05"; eDate <- "2016-04-19"
+    tvalues <- getQueryPeriods(sDate, eDate, 4)
+    tvalues <- append(tvalues, getQueryPeriods("2016-04-05", "2016-04-19", 5))
+    tvalues <- append(tvalues, getQueryPeriods("2016-04-05", "2016-04-19", 6))
+    tvalues <- append(tvalues, getQueryPeriods("2016-04-05", "2016-04-19", 7))
+    checkEqualsNumeric(tvalues, c(4, 3, 3, 2))
+}
