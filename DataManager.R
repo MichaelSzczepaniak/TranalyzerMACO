@@ -35,12 +35,14 @@ agoFrom <- function(dateDelta="years", deltaCount=10, agoFromWhen="today") {
 ## maxAllowableDays.  The most recent period will usually be less than
 ## maxAllowableDays because it will typically be a partial period.
 getQueryPeriods <- function(startDate, endDate, maxAllowableDays) {
-    queryDays <- ceiling(
-                     as.integer(
-                         difftime(as.Date(endDate),
-                         as.Date(startDate),
-                         units="days")
-                     ) / maxAllowableDays)
+    diffDays <- difftime(as.Date(endDate), as.Date(startDate), units="days")
+    # Because our intervals include both startDate & endDate, this app expects
+    # the difference between e.g. "2016-04-02" and "2016-04-01" as being 2 days.
+    # However, because difftime("2016-04-02", "2016-04-01", units="days")
+    # returns 1, we need to add 1 below to get the number of days between dates
+    # that WE expect.
+    diffDays <- as.integer(diffDays) + 1 
+    queryDays <- ceiling(as.integer(diffDays) / maxAllowableDays)
     
     return(queryDays)
 }
