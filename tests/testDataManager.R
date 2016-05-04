@@ -66,3 +66,18 @@ test.getQueryPeriods <- function() {
     tvalues <- append(tvalues, getQueryPeriods("2016-04-05", "2016-04-19", 7))
     checkEqualsNumeric(tvalues, c(4, 3, 3, 2))
 }
+
+test.getCompletedYearsBetweenDates <- function() {
+    eres <- c(0,1,1,0,2,0,10,10,9)
+    tres <- getCompletedYearsBetweenDates("2016-01-01", "2016-05-01")
+    tres <- append(tres, getCompletedYearsBetweenDates("2015-01-01", "2016-05-01"))
+    tres <- append(tres, getCompletedYearsBetweenDates("2015-05-01", "2016-05-01"))
+    tres <- append(tres, getCompletedYearsBetweenDates("2015-05-02", "2016-05-01"))
+    tres <- append(tres, getCompletedYearsBetweenDates("2013-07-02", "2016-05-01"))
+    tres <- append(tres, getCompletedYearsBetweenDates("2015-07-02", "2016-05-01"))
+    tres <- append(tres, getCompletedYearsBetweenDates("2006-04-30", "2016-05-01"))
+    tres <- append(tres, getCompletedYearsBetweenDates("2006-04-30", "2017-04-01"))
+    tres <- append(tres, getCompletedYearsBetweenDates("2007-04-30", "2017-04-22"))
+    
+    checkEqualsNumeric(tres, eres)
+}
