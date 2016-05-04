@@ -77,7 +77,7 @@ getDateRanges <- function(startDate, endDate,
                           maxAllowableDays=360,
                           maxAllowableYears=10) {
     dateIntervals <- list(c(start=startDate, end=endDate))
-    
+    # back-off on the start date if period entered exceeds max allowed
     if(getCompletedYearsBetweenDates(startDate, endDate) >= maxAllowableYears) {
         adjustedStart <- as.POSIXlt(as.Date(endDate))
         adjustedStart$year <- adjustedStart$year - 10
@@ -105,7 +105,6 @@ getDateRanges <- function(startDate, endDate,
                 dateIntervals[[i]] <- c(start=as.character(nextStart),
                                         end=as.character(newEnd))
             }
-            
         }
     }
     

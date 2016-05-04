@@ -81,3 +81,28 @@ test.getCompletedYearsBetweenDates <- function() {
     
     checkEqualsNumeric(tres, eres)
 }
+
+test.getDateRanges <- function() {
+    # tests with defaults maxAllowableDays=360, maxAllowableYears=10
+    sDate="2011-03-01"; eDate="2016-05-04";
+    sDates <- c("2011-03-01", "2012-02-25", "2013-02-20",
+                "2014-02-16", "2015-02-12", "2016-02-08")
+    eDates <- c("2012-02-24", "2013-02-19", "2014-02-15",
+                "2015-02-11", "2016-02-07", "2016-05-04")
+    dateRanges <- getDateRanges(sDate, eDate)
+    rangeCount <- length(dateRanges)
+    correctRangeCount <- checkEquals(rangeCount, 6)
+    if(correctRangeCount) {
+        cat("test.getDateRange default case generated correct # of data ranges",
+            "\nchecking start and end dates of ranges...\n")
+        for(i in 1:rangeCount) {
+            checkStart <- dateRanges[[i]]['start']; names(checkStart) = NULL;
+            checkEquals(checkStart, sDates[i])
+            checkEnd <- dateRanges[[i]]['end']; names(checkEnd) = NULL;
+            checkEquals(checkEnd, eDates[i])
+        }
+    } else {
+        cat("test.getDateRange default case should have 6 date ranges",
+            "but only generated", rangeCount, "\n")
+    }
+}
