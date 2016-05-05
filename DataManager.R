@@ -104,15 +104,16 @@ getDateRanges <- function(startDate, endDate,
     # back-off on the start date if period entered exceeds maxAllowableYears
     if(getCompletedYearsBetweenDates(startDate, endDate) >= maxAllowableYears) {
         adjustedStart <- as.POSIXlt(as.Date(endDate))
-        adjustedStart$year <- adjustedStart$year - 10
+        adjustedStart$year <- adjustedStart$year - maxAllowableYears
         adjustedStart <- as.Date(adjustedStart)
         adjustedStart <- as.character(adjustedStart)
         dateIntervals <- list(c(start=adjustedStart, end=endDate))
         startDate <- adjustedStart
         queryPeriods <- getQueryPeriods(startDate, endDate, daysInInterval)
+    } else {
+        queryPeriods <- getQueryPeriods(startDate, endDate, daysInInterval)
     }
     
-    queryPeriods <- getQueryPeriods(startDate, endDate, daysInInterval)
     if(queryPeriods < 0) {
         cat("getDateRanges recieved negative queryPeriods:", queryPeriods,
             "returning NULL\n")
