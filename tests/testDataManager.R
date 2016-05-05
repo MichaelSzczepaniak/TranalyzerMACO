@@ -127,11 +127,49 @@ test.getDateRanges <- function() {
             "but generated", rangeCount, "\n")
     }
     
-    # test with non-default values for maxAllowableDays, maxAllowableYears
-    # sDate="2016-03-01"; eDate="2016-04-01";
-    # sDates <- c("2016-03-01", "2016-03-07", "2016-03-13",
-    #             "2016-03-19", "2016-03-25", "2016-03-31")
-    # eDates <- c("2012-02-24", "2013-02-19", "2014-02-15",
-    #             "2015-02-11", "2016-02-07", "2016-05-04")
-    # dateRanges <- getDateRanges(sDate, eDate, maxAllowableDays = 5)
+    # test with non-default value for daysInInterval
+    sDate="2016-03-01"; eDate="2016-04-01";
+    sDates <- c("2016-03-01", "2016-03-06", "2016-03-11",
+                "2016-03-16", "2016-03-21", "2016-03-26", "2016-03-31")
+    eDates <- c("2016-03-05", "2016-03-10", "2016-03-15",
+                "2016-03-20", "2016-03-25", "2016-03-30", "2016-04-01")
+    dateRanges <- getDateRanges(sDate, eDate, daysInInterval = 5)
+    rangeCount <- length(dateRanges)
+    correctRangeCount <- checkEquals(rangeCount, 7)
+    if(correctRangeCount) {
+        cat("test.getDateRange non-default daysInInterval generated correct",
+            "\n# of date ranges checking start and end dates of ranges...\n")
+        for(i in 1:rangeCount) {
+            checkStart <- dateRanges[[i]]['start']; names(checkStart) = NULL;
+            checkEquals(checkStart, sDates[i])
+            checkEnd <- dateRanges[[i]]['end']; names(checkEnd) = NULL;
+            checkEquals(checkEnd, eDates[i])
+            cat("test.getDateRanges completed", i, "date range checks\n")
+        }
+    } else {
+        cat("test.getDateRange non-default daysInInterval should have 7 date",
+            "ranges but generated", rangeCount, "\n")
+    }
+    
+    # test with non-default value for maxAllowableYears
+    sDate="2012-04-29"; eDate="2016-05-04";
+    sDates <- c("2013-05-04", "2014-04-29", "2015-04-24", "2016-04-18")
+    eDates <- c("2014-04-28", "2015-04-23", "2016-04-17", "2016-05-04")
+    dateRanges <- getDateRanges(sDate, eDate, maxAllowableYears = 3)
+    rangeCount <- length(dateRanges)
+    correctRangeCount <- checkEquals(rangeCount, 4)
+    if(correctRangeCount) {
+        cat("test.getDateRange non-default maxAllowableYears generated correct",
+            "\n# of date ranges checking start and end dates of ranges...\n")
+        for(i in 1:rangeCount) {
+            checkStart <- dateRanges[[i]]['start']; names(checkStart) = NULL;
+            checkEquals(checkStart, sDates[i])
+            checkEnd <- dateRanges[[i]]['end']; names(checkEnd) = NULL;
+            checkEquals(checkEnd, eDates[i])
+            cat("test.getDateRanges completed", i, "date range checks\n")
+        }
+    } else {
+        cat("test.getDateRange non-default maxAllowableYears should have 4",
+            "date ranges but generated", rangeCount, "\n")
+    }
 }
