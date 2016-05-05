@@ -59,27 +59,36 @@ test.agoFrom.assigned <- function() {
 }
 
 test.getQueryPeriods <- function() {
-    sDate <- "2016-04-05"; eDate <- "2016-04-19"
-    tvalues <- getQueryPeriods(sDate, eDate, 4)
-    tvalues <- append(tvalues, getQueryPeriods("2016-04-05", "2016-04-19", 5))
-    tvalues <- append(tvalues, getQueryPeriods("2016-04-05", "2016-04-19", 6))
-    tvalues <- append(tvalues, getQueryPeriods("2016-04-05", "2016-04-19", 7))
-    checkEqualsNumeric(tvalues, c(4, 3, 3, 2))
+    expectedValues <- c(4, 3, 3, 3, 2)
+    testValues <- getQueryPeriods("2016-04-05", "2016-04-19", 4)
+    testValues <- c(testValues, getQueryPeriods("2016-04-05", "2016-04-19", 5))
+    testValues <- c(testValues, getQueryPeriods("2016-04-05", "2016-04-19", 6))
+    testValues <- c(testValues, getQueryPeriods("2016-04-05", "2016-04-19", 7))
+    testValues <- c(testValues, getQueryPeriods("2016-04-05", "2016-04-18", 7))
+    checkEqualsNumeric(testValues, expectedValues)
 }
 
 test.getCompletedYearsBetweenDates <- function() {
-    eres <- c(0,1,1,0,2,0,10,10,9)
-    tres <- getCompletedYearsBetweenDates("2016-01-01", "2016-05-01")
-    tres <- append(tres, getCompletedYearsBetweenDates("2015-01-01", "2016-05-01"))
-    tres <- append(tres, getCompletedYearsBetweenDates("2015-05-01", "2016-05-01"))
-    tres <- append(tres, getCompletedYearsBetweenDates("2015-05-02", "2016-05-01"))
-    tres <- append(tres, getCompletedYearsBetweenDates("2013-07-02", "2016-05-01"))
-    tres <- append(tres, getCompletedYearsBetweenDates("2015-07-02", "2016-05-01"))
-    tres <- append(tres, getCompletedYearsBetweenDates("2006-04-30", "2016-05-01"))
-    tres <- append(tres, getCompletedYearsBetweenDates("2006-04-30", "2017-04-01"))
-    tres <- append(tres, getCompletedYearsBetweenDates("2007-04-30", "2017-04-22"))
+    expectedValues <- c(0,1,1,0,2,0,10,10,9)
+    testValues <- getCompletedYearsBetweenDates("2016-01-01", "2016-05-01")
+    testValues <- c(testValues,
+                    getCompletedYearsBetweenDates("2015-01-01", "2016-05-01"))
+    testValues <- c(testValues,
+                    getCompletedYearsBetweenDates("2015-05-01", "2016-05-01"))
+    testValues <- c(testValues,
+                    getCompletedYearsBetweenDates("2015-05-02", "2016-05-01"))
+    testValues <- c(testValues,
+                    getCompletedYearsBetweenDates("2013-07-02", "2016-05-01"))
+    testValues <- c(testValues,
+                    getCompletedYearsBetweenDates("2015-07-02", "2016-05-01"))
+    testValues <- c(testValues,
+                    getCompletedYearsBetweenDates("2006-04-30", "2016-05-01"))
+    testValues <- c(testValues,
+                    getCompletedYearsBetweenDates("2006-04-30", "2017-04-01"))
+    testValues <- append(testValues,
+                         getCompletedYearsBetweenDates("2007-04-30", "2017-04-22"))
     
-    checkEqualsNumeric(tres, eres)
+    checkEqualsNumeric(testValues, expectedValues)
 }
 
 test.getDateRanges <- function() {
@@ -103,6 +112,14 @@ test.getDateRanges <- function() {
         }
     } else {
         cat("test.getDateRange default case should have 6 date ranges",
-            "but only generated", rangeCount, "\n")
+            "but generated", rangeCount, "\n")
     }
+    
+    # test with non-default values for maxAllowableDays, maxAllowableYears
+    # sDate="2016-03-01"; eDate="2016-04-01";
+    # sDates <- c("2016-03-01", "2016-03-07", "2016-03-13",
+    #             "2016-03-19", "2016-03-25", "2016-03-31")
+    # eDates <- c("2012-02-24", "2013-02-19", "2014-02-15",
+    #             "2015-02-11", "2016-02-07", "2016-05-04")
+    # dateRanges <- getDateRanges(sDate, eDate, maxAllowableDays = 5)
 }
