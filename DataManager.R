@@ -32,19 +32,31 @@ agoFrom <- function(dateDelta="years", deltaCount=10, agoFromWhen="today") {
 
 ## Returns the number of query periods between startDate and endDate where
 ## the number of days in all but the most recent (last) query period are
-## maxAllowableDays.  The most recent period will usually be less than
-## maxAllowableDays because it will typically be a partial period.
-getQueryPeriods <- function(startDate, endDate, maxAllowableDays) {
-    diffDays <- difftime(as.Date(endDate), as.Date(startDate), units="days")
+## daysInInteval  The most recent period will usually be less than
+## daysInInteval because it will typically be a partial period.
+##
+## daysInInteval includes the first and last date in the interval therefore,
+## the difference between two dates = daysInInterval - 1. For example,
+## if startDate = "2016-04-05" and endDate = "2016-04-06", daysInInterval = 2
+## and difftime(as.Date(endDate), as.Date(startDate), units="days") = 1
+##
+## Preconditions: 1) daysInInteval >= 2 and 2) startDate before endDate
+##
+## If 1) is violated, -1 is returned. If 2) is violated, -2 is returned.
+getQueryPeriods <- function(startDate, endDate, daysInInteval) {
+    if(daysInInteval < 2) return(-1)
+    daysInPeriod <- as.integer(difftime(as.Date(endDate), as.Date(startDate),
+                                        units="days"))
+    if(diffDays < 1) return(-2)
     # Because our intervals include both startDate & endDate, this app expects
-    # the difference between e.g. "2016-04-02" and "2016-04-01" as being 2 days.
-    # However, because difftime("2016-04-02", "2016-04-01", units="days")
-    # returns 1, we need to add 1 below to get the number of days between dates
-    # that WE expect.
-    diffDays <- as.integer(diffDays) + 1 
-    queryDays <- ceiling(as.integer(diffDays) / maxAllowableDays)
+    # the days in the interval between consecutive dates such as "2016-04-02"
+    # and "2016-04-01" to be 2. However, because
+    # difftime("2016-04-02", "2016-04-01", units="days") returns 1, we need to
+    # to add 1 below to get the number of days in the interval we expect.
+    daysInPeriod <- as.integer(daysInPeriod) + 1
+    queryPeriods <- ceiling(as.integer(daysInPeriod) / daysInInteval)
     
-    return(queryDays)
+    return(queryPeriods)
 }
 
 ## Returns the number of completed years between startDate and endDate where:
@@ -63,8 +75,25 @@ getCompletedYearsBetweenDates <- function(startDate, endDate) {
 ## ranges.  It returns a list of character vectors where each vector contains
 ## two strings of the form yyyy-mm-dd.
 ##
-## The first string in each character vector is the starting date of a query
-## period.  The second is the ending date of the period.
+## Precondition: startDate precedes endDate in time
+##
+## startDate - Starting (earlier) date of the overall range to break out
+## endDate - Ending (later) date of the overall range to break out
+## maxAllowableDays = The number of days between the start and end dates of the
+##                    component date ranges for all but the last range. E.g.
+##                    if maxAllowableDays=1 and start="2016-02-08" for an
+##                    interval, end date for the non-ending range would be
+##                    "2016-02-09"
+## daysInInterval = number of days in the all but the last range
+##                = maxAllowableDays + 1 because inclusive of start and end
+##
+## The first string in each character vector (named "start") of the returned
+## list is the starting date of a query period.  The second sting (named "end")
+## is the ending date of the period.
+##
+## The number of days between endDate and startDate is maxAllowableDays + 1
+## because startDate and endDate are included in the interval. E.g. if
+## start="2016-02-08" and end="2016-02-09", daysInInterval=2=maxAllowableDays+1
 ## 
 ## If the number of days between startDate and endDate is less than
 ## maxAllowableDays, then a list with a single vector containing startDate and
@@ -78,6 +107,7 @@ getCompletedYearsBetweenDates <- function(startDate, endDate) {
 getDateRanges <- function(startDate, endDate,
                           maxAllowableDays=360,
                           maxAllowableYears=10) {
+    daysInInterval <- maxAllowableDays + 1
     dateIntervals <- list(c(start=startDate, end=endDate))
     # back-off on the start date if period entered exceeds max allowed
     if(getCompletedYearsBetweenDates(startDate, endDate) >= maxAllowableYears) {
@@ -91,6 +121,11 @@ getDateRanges <- function(startDate, endDate,
     }
     
     queryPeriods <- getQueryPeriods(startDate, endDate, maxAllowableDays)
+    if(queryPeriods < 0) {
+        cat("getDateRanges recieved negative queryPeriods:", queryPeriods,
+            "returning NULL\n")
+        return(NULL)
+    }
     
     if(queryPeriods > 1) {
         firstEnd <- as.Date(startDate) + maxAllowableDays
@@ -99,7 +134,7 @@ getDateRanges <- function(startDate, endDate,
             dateInterval <- dateIntervals[[i-1]]
             nextStart <- as.Date(dateInterval["end"]) + 1
             newEnd <- nextStart + maxAllowableDays
-            if(i >= queryPeriods) {
+            if(i >= queryPeriods) {  # terminal/truncated range
                 dateIntervals[[i]] <- c(start=as.character(nextStart),
                                         end=endDate)
             }
