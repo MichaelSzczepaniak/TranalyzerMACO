@@ -16,7 +16,7 @@ lapply(libs, require, character.only=TRUE)  # load libs
 # http://www.johnmyleswhite.com/notebook/2010/08/17/unit-testing-in-r-the-bare-minimum/
 library('RUnit')
 source('DataManager.R')
-# change testFileRegexp so it more like testthat convention
+# change testFileRegex so it's more like the testthat convention
 test.suite <- defineTestSuite('DataManager.R tests',
                               dirs = file.path('tests'),
                               testFileRegexp = '^(test).+\\.R')

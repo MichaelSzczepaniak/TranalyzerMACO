@@ -59,20 +59,24 @@ test.agoFrom.assigned <- function() {
 }
 
 test.getQueryPeriods <- function() {
-    testValues <- getQueryPeriods("2016-04-05", "2016-04-19", 4)                # 4
-    testValues <- c(testValues, getQueryPeriods("2016-04-05", "2016-04-20", 4)) # 4
-    testValues <- c(testValues, getQueryPeriods("2016-04-05", "2016-04-21", 4)) # 5
-    testValues <- c(testValues, getQueryPeriods("2016-04-05", "2016-04-22", 4)) # 5
-    testValues <- c(testValues, getQueryPeriods("2016-04-05", "2016-04-18", 5)) # 3
-    testValues <- c(testValues, getQueryPeriods("2016-04-05", "2016-04-19", 5)) # 3
-    testValues <- c(testValues, getQueryPeriods("2016-04-05", "2016-04-20", 5)) # 4
-    testValues <- c(testValues, getQueryPeriods("2016-04-05", "2016-04-21", 5)) # 4
-    testValues <- c(testValues, getQueryPeriods("2016-04-05", "2016-04-15", 6)) # 2
-    testValues <- c(testValues, getQueryPeriods("2016-04-05", "2016-04-16", 6)) # 2
-    testValues <- c(testValues, getQueryPeriods("2016-04-05", "2016-04-17", 6)) # 3
-    testValues <- c(testValues, getQueryPeriods("2016-04-05", "2016-04-18", 6)) # 3
-    expectedValues <- c(4,4,5,5,3,3,4,4,2,2,3,3)
-    checkEqualsNumeric(testValues, expectedValues)
+    ################################################################# check #
+    checkEqualsNumeric(getQueryPeriods("2016-04-05", "2016-04-19", 4), 4) # 1
+    checkEqualsNumeric(getQueryPeriods("2016-04-05", "2016-04-20", 4), 4) # 2
+    checkEqualsNumeric(getQueryPeriods("2016-04-05", "2016-04-21", 4), 5) # 3
+    checkEqualsNumeric(getQueryPeriods("2016-04-05", "2016-04-22", 4), 5) # 4
+    checkEqualsNumeric(getQueryPeriods("2016-04-05", "2016-04-18", 5), 3) # 5
+    checkEqualsNumeric(getQueryPeriods("2016-04-05", "2016-04-19", 5), 3) # 6
+    checkEqualsNumeric(getQueryPeriods("2016-04-05", "2016-04-20", 5), 4) # 7
+    checkEqualsNumeric(getQueryPeriods("2016-04-05", "2016-04-21", 5), 4) # 8
+    checkEqualsNumeric(getQueryPeriods("2016-04-05", "2016-04-15", 6), 2) # 9
+    checkEqualsNumeric(getQueryPeriods("2016-04-05", "2016-04-16", 6), 2) # 10
+    checkEqualsNumeric(getQueryPeriods("2016-04-05", "2016-04-17", 6), 3) # 11
+    checkEqualsNumeric(getQueryPeriods("2016-04-05", "2016-04-18", 6), 3) # 12
+    # test for single query period boundary
+    checkEqualsNumeric(getQueryPeriods("2016-04-01", "2016-05-06", 37), 1) # 13
+    checkEqualsNumeric(getQueryPeriods("2016-04-01", "2016-05-06", 36), 1) # 14
+    checkEqualsNumeric(getQueryPeriods("2016-04-01", "2016-05-06", 35), 2) # 15
+    checkEqualsNumeric(getQueryPeriods("2016-04-01", "2016-05-06", 34), 2) # 16
 }
 
 test.getCompletedYearsBetweenDates <- function() {
@@ -172,4 +176,8 @@ test.getDateRanges <- function() {
         cat("test.getDateRange non-default maxAllowableYears should have 4",
             "date ranges but generated", rangeCount, "\n")
     }
+    
+    # test for single query period boundary
+    #sDate="2016-04-01"; eDate="2016-05-06"; daysInInterval=36
+    
 }
