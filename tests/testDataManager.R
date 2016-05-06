@@ -178,6 +178,42 @@ test.getDateRanges <- function() {
     }
     
     # test for single query period boundary
-    #sDate="2016-04-01"; eDate="2016-05-06"; daysInInterval=36
-    
+    sDate="2016-04-01"; eDate="2016-05-06"; dii=38
+    dateRanges <- getDateRanges(sDate, eDate, daysInInterval = dii)
+    checkEquals(length(dateRanges), 1)
+    checkStart <- dateRanges[[1]]['start']; names(checkStart) = NULL;
+    checkEnd <- dateRanges[[1]]['end']; names(checkEnd) = NULL;
+    checkEquals(checkStart, sDate); checkEquals(checkEnd, eDate)
+    dii=37
+    dateRanges <- getDateRanges(sDate, eDate, daysInInterval = dii)
+    checkEquals(length(dateRanges), 1)
+    checkStart <- dateRanges[[1]]['start']; names(checkStart) = NULL;
+    checkEnd <- dateRanges[[1]]['end']; names(checkEnd) = NULL;
+    checkEquals(checkStart, sDate); checkEquals(checkEnd, eDate)
+    dii=36
+    dateRanges <- getDateRanges(sDate, eDate, daysInInterval = dii)
+    checkEquals(length(dateRanges), 1)
+    checkStart <- dateRanges[[1]]['start']; names(checkStart) = NULL;
+    checkEnd <- dateRanges[[1]]['end']; names(checkEnd) = NULL;
+    checkEquals(checkStart, sDate); checkEquals(checkEnd, eDate)
+    dii=35  # 1 day spills over into a 2nd query period
+    dateRanges <- getDateRanges(sDate, eDate, daysInInterval = dii)
+    checkEquals(length(dateRanges), 2)
+    checkStart <- dateRanges[[1]]['start']; names(checkStart) = NULL;
+    checkEnd <- dateRanges[[1]]['end']; names(checkEnd) = NULL;
+    checkEquals(checkStart, sDate); checkEquals(checkEnd, "2016-05-05")
+    # 2nd query period should only contain the endDate
+    checkStart <- dateRanges[[2]]['start']; names(checkStart) = NULL;
+    checkEnd <- dateRanges[[2]]['end']; names(checkEnd) = NULL;
+    checkEquals(checkStart, eDate); checkEquals(checkEnd, eDate)
+    dii=34  # 2 days spills over into a 2nd query period
+    dateRanges <- getDateRanges(sDate, eDate, daysInInterval = dii)
+    checkEquals(length(dateRanges), 2)
+    checkStart <- dateRanges[[1]]['start']; names(checkStart) = NULL;
+    checkEnd <- dateRanges[[1]]['end']; names(checkEnd) = NULL;
+    checkEquals(checkStart, sDate); checkEquals(checkEnd, "2016-05-04")
+    # 2nd query period should contain last 2 days in overall range
+    checkStart <- dateRanges[[2]]['start']; names(checkStart) = NULL;
+    checkEnd <- dateRanges[[2]]['end']; names(checkEnd) = NULL;
+    checkEquals(checkStart, "2016-05-05"); checkEquals(checkEnd, eDate)
 }

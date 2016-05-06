@@ -32,30 +32,32 @@ agoFrom <- function(dateDelta="years", deltaCount=10, agoFromWhen="today") {
 
 ## Returns the number of query periods between startDate and endDate where
 ## the number of days in all but the most recent (last) query period are
-## daysInInteval  The most recent period will usually be less than
-## daysInInteval because it will typically be a partial period.
+## daysInInterval  The most recent period will usually be less than
+## daysInInterval because it will typically be a partial period.
 ##
-## daysInInteval includes the first and last date in the interval therefore,
+## daysInInterval includes the first and last date in the interval therefore,
 ## the difference between two dates = daysInInterval - 1. For example,
 ## if startDate = "2016-04-05" and endDate = "2016-04-06", daysInInterval = 2
 ## and difftime(as.Date(endDate), as.Date(startDate), units="days") = 1
 ##
-## Preconditions: 1) daysInInteval >= 1 and 2) startDate before endDate
+## Preconditions: 1) daysInInterval > 0 and 2) startDate on or before endDate
 ##
 ## If 1) is violated, -1 is returned. If 2) is violated, -2 is returned.
-getQueryPeriods <- function(startDate, endDate, daysInInteval) {
-    if(daysInInteval < 1) return(-1)
+getQueryPeriods <- function(startDate, endDate, daysInInterval) {
+    if(daysInInterval <= 0) return(-1)
     diffEndStart <- as.integer(difftime(as.Date(endDate), as.Date(startDate),
                                         units="days"))
     if(diffEndStart < 0) return(-2)
-    if(diffEndStart == 0) return(1) # startDate == endDate
+    # single query period if the days in the overall interval between
+    # endDays and startDays <= daysInInterval
+    if(daysInInterval >= diffEndStart + 1) return(1)
     # Because our intervals include both startDate & endDate, this app expects
     # the days in the interval between consecutive dates such as "2016-04-02"
     # and "2016-04-01" to be 2. However, because
     # difftime("2016-04-02", "2016-04-01", units="days") returns 1, we need to
     # to add 1 below to get the number of days in the interval we expect.
     daysInPeriod <- diffEndStart + 1
-    queryPeriods <- ceiling(as.integer(daysInPeriod) / daysInInteval)
+    queryPeriods <- ceiling(as.integer(daysInPeriod) / daysInInterval)
     
     return(queryPeriods)
 }
@@ -118,9 +120,9 @@ getDateRanges <- function(startDate, endDate,
         cat("getDateRanges recieved negative queryPeriods:", queryPeriods,
             "returning NULL\n")
         return(NULL)
-    }
-    
-    if(queryPeriods > 0) {
+    } else if(queryPeriods == 1) {
+        return(dateIntervals)
+    } else {
         firstEnd <- as.Date(startDate) + daysInInterval - 1
         dateIntervals <- list(c(start=startDate, end=as.character(firstEnd)))
         for(i in 2:queryPeriods) {
