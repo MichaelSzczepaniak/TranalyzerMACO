@@ -83,7 +83,7 @@ getCompletedYearsBetweenDates <- function(startDate, endDate) {
 ## startDate - Starting (earlier) date of the overall range to break out
 ## endDate - Ending (later) date of the overall range to break out
 ## daysInInterval = The number of days in each of date ranges returned except
-##                  for the most recent because it will usually be a parially
+##                  for the most recent because it will usually be a partially
 ##                  filled range
 ##
 ## The first string in each character vector (named "start") of the returned
@@ -166,7 +166,8 @@ getDateRanges <- function(startDate, endDate,
 getSinglePeriodYqlQuotes <- function(ticker, startYYYY_MM_DD,
                                      endYYYY_MM_DD, dataFrame=NULL) {
     #install.packages("XML"); install.packages("dplyr")
-    cat("getSinglePeriodYqlQuotes parameters:", ticker, startYYYY_MM_DD, endYYYY_MM_DD, dataFrame)
+    cat("getSinglePeriodYqlQuotes parameters:", ticker,
+        startYYYY_MM_DD, endYYYY_MM_DD, dataFrame, "\n")
     library(XML)
     library(dplyr)
     # change https to http stackoverflow.com/questions/23584514/23584751#23584751
@@ -231,6 +232,7 @@ getQuotesFromService <- function(ticker, startDate, endDate,
         ", endDate=", endDate,
         ", service=", service, "\n")
     quotes <- NULL
+    ## TODO put this code into its own function and source it
     if(service == "finance.yahoo") {
         dateRanges <- getDateRanges(startDate, endDate)
         quoteCount <- length(dateRanges)
@@ -258,8 +260,8 @@ getQuotesFromService <- function(ticker, startDate, endDate,
 ## will query and write a file to ./data/[ticker].csv which will be read when
 ## future queries for ticker symbol ticker are made.
 ##
-## If the file ./data/[ticker].csv exists and contains the requested data, data
-## -frame will be returned, but no query to the quote service will be made.
+## If the file ./data/[ticker].csv exists and contains the requested data, a 
+## data.frame will be returned, but no query to the quote service will be made.
 ##
 ## If the file ./data/[ticker].csv exists but does NOT contain the requested
 ## data, a query to the quote service will be made for the missing data as long
