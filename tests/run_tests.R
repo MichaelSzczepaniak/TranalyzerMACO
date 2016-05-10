@@ -1,10 +1,9 @@
 # install packages if needed
-list.of.packages <- c('RUnit', 'dplyr', 'readr') # c('testthat', 'dplyr', 'readr')
+list.of.packages <- c('RUnit', 'dplyr', 'readr', 'XML')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages) > 0) install.packages(new.packages)
 # load libraries
-libs <- c('RUnit', 'dplyr', 'readr') # c('testthat', 'dplyr', 'readr')
-lapply(libs, require, character.only=TRUE)  # load libs
+lapply(list.of.packages, require, character.only=TRUE)  # load libs
 
 # reference:
 # http://www.johndcook.com/blog/2013/06/12/example-of-unit-testing-r-code-with-testthat/
