@@ -1,4 +1,6 @@
 source("DataManager.R")
+testDataDir <- './tests/data/'  # relative to project
+#testDataDir <- './data/'  # relative to current dir
 
 test.getSinglePeriodYqlQuotes <- function() {
     expHLOCV2016.01.04 <- c(105.370003, 102, 102.610001, 105.349998, 67649400)
@@ -44,8 +46,10 @@ test.getQuotesFromService <- function() {
 test.initCreateStockQuoteFile <- function() {
     # create quote data file and check that it exists
     tickSym <- "DIS"
-    disQuotes <- getStockQuotes(tickSym, '2005-12-15', '2010-12-20')
-    checkTrue(file.exists('./data/DIS.csv'))
+    outFile <- sprintf('%s%s%s', testDataDir, tickSym, '.csv')
+    disQuotes <- getStockQuotes(tickSym, '2005-12-15', '2010-12-20',
+                                dataDir=testDataDir)
+    checkTrue(file.exists(outFile))
     # check that written file has first 3 and last 3 quotes
     dis1stThree <- data.frame(Date=c('2005-12-15', '2005-12-16', '2005-12-19'),
                               High=c(25.09, 24.91, 24.85),
@@ -73,6 +77,8 @@ test.initCreateStockQuoteFile <- function() {
     checkEquals(disLastThree$Open, disQuotes[l2i,]$Open, tolerance = 0.001)
     checkEquals(disLastThree$Close, disQuotes[l2i,]$Close, tolerance = 0.001)
     checkEquals(disLastThree$Volume, disQuotes[l2i,]$Volume, tolerance = 0.001)
+    ## clean up
+    if(file.exists(outFile)) file.remove(outFile)
 }
 
 ## Tests the case when some of the quote data requested exists in the local
