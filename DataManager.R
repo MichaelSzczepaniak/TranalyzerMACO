@@ -281,7 +281,8 @@ getQuotesFromService <- function(ticker, startDate, endDate,
 getStockQuotes <- function(ticker,
                            startDate=agoFromToday(), 
                            endDate=as.character(Sys.Date()),
-                           maxAllowableYears=10) {
+                           maxAllowableYears=10,
+                           dataDir='./data/') {
     cat("getStockQuotes parameters:\n", "ticker=", ticker, "\n",
         "startDate=", startDate, ", endDate=", endDate, "\n",
         "maxAllowableYears=", maxAllowableYears, "\n")
@@ -289,7 +290,7 @@ getStockQuotes <- function(ticker,
     today <- as.character(Sys.Date())
     quoteCols <- c("Symbol", "Date", "High", "Low", "Open", "Close", "Volume")
     # check if data for the ticker has been downloaded already
-    tickerFile <- paste0("./data/", ticker, ".csv")
+    tickerFile <- paste0(dataDir, ticker, ".csv")
     if(file.exists(tickerFile)) {
         # ticker has been queried, does is have all the data requested?
         existingQuotesAppended <- FALSE
@@ -338,7 +339,7 @@ getStockQuotes <- function(ticker,
         }
         if(existingQuotesAppended) {
             # quotes has gotten data appended to it: write out updated quotes
-            filePath <- paste0("./data/", ticker, ".csv")
+            filePath <- paste0(dataDir, ticker, ".csv")
             write.csv(quotes, filePath, row.names=FALSE)
             cat("Completed writing updated quotes to ", filePath, "\n")
         }
@@ -356,10 +357,11 @@ getStockQuotes <- function(ticker,
 ## tickers - vector of ticker symbols
 ## startDate - starting date for the quote in format yyyy-mm-dd
 ## endDate - ending date for the quote in format yyyy-mm-dd
-writeQuotes <- function(tickers, startDate, endDate=as.character(Sys.Date())) {
+writeQuotes <- function(tickers, startDate, endDate=as.character(Sys.Date()),
+                        dataDir='./data/') {
     for(i in 1:length(tickers)) {
         quotes <- getQuotesFromService(tickers[i], startDate, endDate)
-        filePath <- paste0("./data/", tickers[i], ".csv")
+        filePath <- paste0(dataDir, tickers[i], ".csv")
         write.csv(quotes, filePath, row.names=FALSE)
         cat("Completed writing quotes to ", filePath, "\n")
     }
