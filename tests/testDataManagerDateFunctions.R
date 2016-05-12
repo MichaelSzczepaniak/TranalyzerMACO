@@ -1,3 +1,5 @@
+source("DataManager.R")
+
 # Using the testthat scheme:
 #
 # test_that("agoFrom: agoFromWhen default", {

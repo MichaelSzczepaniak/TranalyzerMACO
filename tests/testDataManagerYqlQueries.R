@@ -1,7 +1,6 @@
-
+source("DataManager.R")
 
 test.getSinglePeriodYqlQuotes <- function() {
-    
     expHLOCV2016.01.04 <- c(105.370003, 102, 102.610001, 105.349998, 67649400)
     expHLOCV2016.01.05 <- c(105.849998, 102.410004, 105.75, 102.709999, 55791000)
     quotes <- getSinglePeriodYqlQuotes(ticker='AAPL',
@@ -33,7 +32,7 @@ test.getQuotesFromService <- function() {
     bigQuotes <- getQuotesFromService(ticker='JNJ',
                                       startDate='2005-12-15',
                                       endDate='2010-12-20',
-                                      service="finance.yahoo")
+                                      service='finance.yahoo')
     jnjStart <- as.numeric(bigQuotes[3,3:7])
     jnjEnd <- as.numeric(bigQuotes[nrow(bigQuotes),3:7])
     checkEquals(jnjHLOCV2005.12.19, jnjStart, tolerance = 0.001)

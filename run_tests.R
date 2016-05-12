@@ -5,7 +5,7 @@ if(length(new.packages) > 0) install.packages(new.packages)
 # load libraries
 lapply(list.of.packages, require, character.only=TRUE)  # load libs
 
-# reference:
+# testthat reference:
 # http://www.johndcook.com/blog/2013/06/12/example-of-unit-testing-r-code-with-testthat/
 # library('testthat')
 # source('DataManager.R')
@@ -13,7 +13,7 @@ lapply(list.of.packages, require, character.only=TRUE)  # load libs
 
 # reference:
 # http://www.johnmyleswhite.com/notebook/2010/08/17/unit-testing-in-r-the-bare-minimum/
-source('DataManager.R')
+
 # change testFileRegex so it's more like the testthat convention
 test.suite <- defineTestSuite('DataManager.R tests',
                               dirs = file.path('tests'),
