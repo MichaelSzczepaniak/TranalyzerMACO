@@ -292,7 +292,7 @@ getStockQuotes <- function(ticker,
     # check if data for the ticker has been downloaded already
     tickerFile <- paste0(dataDir, ticker, ".csv")
     if(file.exists(tickerFile)) {
-        # ticker has been queried, does is have all the data requested?
+        # quote file exists for ticker, but does is have all the data requested?
         existingQuotesAppended <- FALSE
         quotes <- read.csv(tickerFile, as.is=TRUE) # data existing local
         startDataDate <- as.Date(quotes$Date[1])
@@ -345,8 +345,8 @@ getStockQuotes <- function(ticker,
         }
     }
     else {
-        # ticker has not been queried: query, write, then read written file
-        writeQuotes(tickers = c(ticker), startDate, endDate)
+        # quote file doesn't exist yet: query, write, then read written file
+        writeQuotes(tickers = c(ticker), startDate, endDate, dataDir)
         quotes <- read.csv(tickerFile, as.is=TRUE)
     }
     
