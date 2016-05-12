@@ -39,3 +39,57 @@ test.getQuotesFromService <- function() {
     checkEquals(jnjHLOCV2005.12.19, jnjStart, tolerance = 0.001)
     checkEquals(jnjHLOCV2010.12.20, jnjEnd, tolerance = 0.001)
 }
+
+## Tests the initial creation of the quotes data file and that the first and 
+## last three records in the quote file are as expected.
+test.initCreateStockQuoteFile <- function() {
+    # create quote data file and check that it exists
+    tickSym <- "DIS"
+    disQuotes <- getStockQuotes(tickSym, '2005-12-15', '2010-12-20')
+    checkTrue(file.exists('./data/DIS.csv'))
+    # check that written file has first 3 and last 3 quotes
+    dis1stThree <- data.frame(Date=c('2005-12-15', '2005-12-16', '2005-12-19'),
+                              High=c(25.09, 24.91, 24.85),
+                              Low=c(24.71, 24.54, 24.32),
+                              Open=c(25.00, 24.90, 24.32),
+                              Close=c(24.74, 24.70, 24.54),
+                              Volume=c(8150900, 16282000, 6918800))
+    disLastThree <- data.frame(Date=c('2010-12-16', '2010-12-17', '2010-12-20'),
+                               High=c(37.18,37.17, 37.34),
+                               Low=c(36.90, 36.77, 36.84),
+                               Open=c(37.02, 36.97, 37.03),
+                               Close=c(37.01, 37.05, 37.06),
+                               Volume=c(7649800, 11285400, 5114100))
+    ## check first 3 quotes
+    checkEquals(dis1stThree$High, disQuotes[1:3,]$High, tolerance = 0.001)
+    checkEquals(dis1stThree$Low, disQuotes[1:3,]$Low, tolerance = 0.001)
+    checkEquals(dis1stThree$Open, disQuotes[1:3,]$Open, tolerance = 0.001)
+    checkEquals(dis1stThree$Close, disQuotes[1:3,]$Close, tolerance = 0.001)
+    checkEquals(dis1stThree$Volume, disQuotes[1:3,]$Volume, tolerance = 0.001)
+    ## check last 3 quotes
+    lastIndex <- nrow(disQuotes)
+    l2i <- seq(lastIndex-2, lastIndex)
+    checkEquals(disLastThree$High, disQuotes[l2i,]$High, tolerance = 0.001)
+    checkEquals(disLastThree$Low, disQuotes[l2i,]$Low, tolerance = 0.001)
+    checkEquals(disLastThree$Open, disQuotes[l2i,]$Open, tolerance = 0.001)
+    checkEquals(disLastThree$Close, disQuotes[l2i,]$Close, tolerance = 0.001)
+    checkEquals(disLastThree$Volume, disQuotes[l2i,]$Volume, tolerance = 0.001)
+}
+
+## Tests the case when some of the quote data requested exists in the local
+## data file (<ticker symbol>.csv), but more recent data needs to be added to
+## to this file needs to bring it up to date
+test.appendStockQuoteFile <- function() {
+    # create a file with quotes for DIS from 2005-12-15 through 2010-12-20
+    
+    # test that file was created and contains proper 1st and last 3 records
+    
+    # request DIS data from 2008-01-07 through 2012-05-10 and append DIS.csv
+    
+    # test that appended data contains proper 1st and last 3 records
+    
+}
+
+test.getQuotesFromExisting <- function() {
+    
+}
