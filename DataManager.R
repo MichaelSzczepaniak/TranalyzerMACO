@@ -1,3 +1,9 @@
+# install packages if needed
+list.of.packages <- c('dplyr', 'readr', 'XML')
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages) > 0) install.packages(new.packages)
+# load libraries
+lapply(list.of.packages, require, character.only=TRUE)  # load libs
 
 ## Returns a string of the form yyyy-mm-dd which is deltaCount number of
 ## dateDelta time periods in the past from today. E.g. if defaults are used
@@ -98,7 +104,6 @@ getCompletedYearsBetweenDates <- function(startDate, endDate) {
 ## daysInInterval, then a list with 2 or more vectors will be returned.  Each
 ## vector in this case will span at most a daysInInterval number of days in a
 ## portion of the range between startDate and endDate.
-## 
 getDateRanges <- function(startDate, endDate,
                           daysInInterval=360,
                           maxAllowableYears=10) {
