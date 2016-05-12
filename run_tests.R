@@ -17,7 +17,8 @@ lapply(list.of.packages, require, character.only=TRUE)  # load libs
 # change testFileRegex so it's more like the testthat convention
 test.suite <- defineTestSuite('DataManager.R tests',
                               dirs = file.path('tests'),
-                              testFileRegexp = '^(test).+\\.R')
+                              testFileRegexp = '^(test).+\\.R',
+                              testFuncRegexp = '^(test.)')
 
 test.result <- runTestSuite(test.suite)
 
