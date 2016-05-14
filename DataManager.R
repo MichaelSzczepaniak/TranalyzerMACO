@@ -350,6 +350,9 @@ getStockQuotes <- function(ticker,
         quotes <- read.csv(tickerFile, as.is=TRUE)
     }
     
+    # Lastly, only return what's asked for
+    quotes <- quotes[quotes$Date >= startDate & quotes$Date <= endDate,]
+    
     return(quotes)
 }
 
