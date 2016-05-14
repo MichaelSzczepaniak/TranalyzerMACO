@@ -76,7 +76,7 @@ test.initCreateStockQuoteFile <- function() {
     checkEquals(disLastThree$Low, disQuotes[l2i,]$Low, tolerance = 0.001)
     checkEquals(disLastThree$Open, disQuotes[l2i,]$Open, tolerance = 0.001)
     checkEquals(disLastThree$Close, disQuotes[l2i,]$Close, tolerance = 0.001)
-    checkEquals(disLastThree$Volume, disQuotes[l2i,]$Volume, tolerance = 0.001)
+    checkEquals(disLastThree$Volume, disQuotes[l2i,]$Volume)
     ## clean up
     if(file.exists(outFile)) file.remove(outFile)
 }
@@ -107,7 +107,7 @@ test.appendStockQuoteFile <- function() {
     checkEquals(disTop3Secn$Low, disNewQuotesTop3$Low, tolerance = 0.001)
     checkEquals(disTop3Secn$Open, disNewQuotesTop3$Open, tolerance = 0.001)
     checkEquals(disTop3Secn$Close, disNewQuotesTop3$Close, tolerance = 0.001)
-    checkEquals(disTop3Secn$Volume, disNewQuotesTop3$Volume, tolerance = 0.001)
+    checkEquals(disTop3Secn$Volume, disNewQuotesTop3$Volume)
     # bottom of new added section
     addBotDates <- c('2012-05-08', '2012-05-09', '2012-05-10')
     disBot3Secn <- data.frame(Date=c('2012-05-08', '2012-05-09', '2012-05-10'),
@@ -121,12 +121,45 @@ test.appendStockQuoteFile <- function() {
     checkEquals(disBot3Secn$Low, disNewQuotesBot3$Low, tolerance = 0.001)
     checkEquals(disBot3Secn$Open, disNewQuotesBot3$Open, tolerance = 0.001)
     checkEquals(disBot3Secn$Close, disNewQuotesBot3$Close, tolerance = 0.001)
-    checkEquals(disBot3Secn$Volume, disNewQuotesBot3$Volume, tolerance = 0.001)
+    checkEquals(disBot3Secn$Volume, disNewQuotesBot3$Volume)
     ## clean up
     if(file.exists(outFile)) file.remove(outFile)
 }
 
 ## Tests the case where all the data exists locally
 test.getQuotesFromExisting <- function() {
-    
+    # create a file with quotes for DIS from 2005-12-15 through 2010-12-20
+    tickSym <- "DIS"
+    outFile <- sprintf('%s%s%s', testDataDir, tickSym, '.csv')
+    disQuotes1 <- getStockQuotes(tickSym, '2005-12-15', '2010-12-20',
+                                 dataDir=testDataDir)
+    # requests subset of existing data
+    disQuotes2 <- getStockQuotes(tickSym, '2010-01-15', '2010-05-20',
+                                 dataDir=testDataDir)
+    # check the first 2 records
+    first2Dates <- c('2010-01-15', '2010-01-19')
+    first2recs <- data.frame(Date=first2Dates,
+                             High=c(31.15, 31.19), Low=c(30.41, 30.5),
+                             Open=c(31.01, 30.59), Close=c(30.6, 31.01),
+                             Volume=c(13936400, 9662100))
+    disTop2recs <- disQuotes2[disQuotes2$Date %in% first2Dates, ]
+    checkEquals(first2recs$High, disTop2recs$High, tolerance = 0.001)
+    checkEquals(first2recs$Low, disTop2recs$Low, tolerance = 0.001)
+    checkEquals(first2recs$Open, disTop2recs$Open, tolerance = 0.001)
+    checkEquals(first2recs$Close, disTop2recs$Close, tolerance = 0.001)
+    checkEquals(first2recs$Volume, disTop2recs$Volume)
+    # check the last 2 records
+    last2Dates <- c('2010-05-19', '2010-05-20')
+    last2recs <- data.frame(Data=last2Dates,
+                            High=c(33.80, 32.96), Low=c(33.09, 31.99),
+                            Open=c(33.47, 32.76), Close=c(33.39, 31.99),
+                            Volume=c(18536600, 26615500))
+    disBot2recs <- disQuotes2[disQuotes2$Date %in% last2Dates, ]
+    checkEquals(last2recs$High, disBot2recs$High, tolerance = 0.001)
+    checkEquals(last2recs$Low, disBot2recs$Low, tolerance = 0.001)
+    checkEquals(last2recs$Open, disBot2recs$Open, tolerance = 0.001)
+    checkEquals(last2recs$Close, disBot2recs$Close, tolerance = 0.001)
+    checkEquals(last2recs$Volume, disBot2recs$Volume)
+    ## clean up
+    if(file.exists(outFile)) file.remove(outFile)
 }
