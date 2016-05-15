@@ -15,7 +15,7 @@ lapply(list.of.packages, require, character.only=TRUE)  # load libs
 # http://www.johnmyleswhite.com/notebook/2010/08/17/unit-testing-in-r-the-bare-minimum/
 
 # change testFileRegex so it's more like the testthat convention
-test.suite <- defineTestSuite('DataManager.R tests',
+test.suite <- defineTestSuite('Tranalyzer tests',
                               dirs = file.path('tests'),
                               testFileRegexp = '^(test).+\\.R',
                               testFuncRegexp = '^(test.)')

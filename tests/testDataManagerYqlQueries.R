@@ -1,4 +1,4 @@
-source("DataManager.R")
+source("./tranmaco/DataManager.R")
 testDataDir <- './tests/data/'  # relative to project
 #testDataDir <- './data/'  # relative to current dir
 

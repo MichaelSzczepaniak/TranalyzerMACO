@@ -1,4 +1,4 @@
-source("DataManager.R")
+source("./tranmaco/DataManager.R")
 
 # Using the testthat scheme:
 #
