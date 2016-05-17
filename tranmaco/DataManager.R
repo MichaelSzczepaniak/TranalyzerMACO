@@ -288,7 +288,7 @@ getStockQuotes <- function(ticker,
         "maxAllowableYears=", maxAllowableYears, "\n")
     # TODO handle invalid ticker
     today <- as.character(Sys.Date())
-    quoteCols <- c("Symbol", "Date", "High", "Low", "Open", "Close", "Volume")
+    quoteCols <- c("Date", "High", "Low", "Open", "Close", "Volume")
     # check if data for the ticker has been downloaded already
     tickerFile <- paste0(dataDir, ticker, ".csv")
     if(file.exists(tickerFile)) {
@@ -299,8 +299,8 @@ getStockQuotes <- function(ticker,
         endDataDate <- as.Date(quotes$Date[nrow(quotes)])
         # check if existing data is current enough
         if(as.Date(endDate) > endDataDate) {
-            # requesting data that is not current enough, need to
-            # bring existing quotes up-to-date & append quote file
+            # Requesting data that is not current enough. Need to
+            # bring existing quotes up-to-date & append quote file.
             addStartDate <- as.character(endDataDate+1)
             addData <- getQuotesFromService(ticker, addStartDate, endDate)
             # leave quotes as-is if no add'l quotes come back 
@@ -362,9 +362,11 @@ getStockQuotes <- function(ticker,
 ## endDate - ending date for the quote in format yyyy-mm-dd
 writeQuotes <- function(tickers, startDate, endDate=as.character(Sys.Date()),
                         dataDir='./data/') {
+    quoteCols <- c("Date", "High", "Low", "Open", "Close", "Volume")
     for(i in 1:length(tickers)) {
         quotes <- getQuotesFromService(tickers[i], startDate, endDate)
-        filePath <- paste0(dataDir, tickers[i], ".csv")
+        quotes <- quotes[, quoteCols] # don't need Symbol column
+        filePath <- paste0(dataDir, tickers[i], ".csv") # symbol in filename
         write.csv(quotes, filePath, row.names=FALSE)
         cat("Completed writing quotes to ", filePath, "\n")
     }
