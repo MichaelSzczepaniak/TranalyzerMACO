@@ -30,7 +30,6 @@ pmOptionsList <- as.list((pmOptions$Position_Sizing_Strategy))
 fluidPage(
     headerPanel("MACO Analyzer"),
     sidebarPanel(
-        h4('Quote Data Acquisition'),
         textInput('ticker', label=h4("Company:")),
         dateRangeInput('inQueryDateRange', label = h4("Quotes Date Range:"),
                        start=simStartDate, end=simEndDate,
@@ -43,14 +42,17 @@ fluidPage(
         numericInput('inAccBalance', 'Starting Account Balance:',
                      10000, min = 5000, max = 1000000, step = 500),
         selectInput('inPosMgmt', label=h4("Position Management:"),
-                    choices=pmOptionsList, selected=1)
+                    choices=pmOptionsList, selected=1),
+        actionButton('inRunSim', 'Run Simulation')
 
     ),
     mainPanel(
         tabsetPanel(
             tabPanel("Analyzer",
                 h4('Quote Data Status:'),
-                verbatimTextOutput("outQuoteDataStatus")
+                verbatimTextOutput("outQuoteDataStatus"),
+                h4('Simulation Parameters:'),
+                verbatimTextOutput("outSimParams")
                 
             ),
             tabPanel("Graphics", h3("Trades identified using this signal:"),
