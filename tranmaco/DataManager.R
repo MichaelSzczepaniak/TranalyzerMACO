@@ -173,12 +173,10 @@ getYahooQuoteTableString <- function(ticker, startYYYY_MM_DD, endYYYY_MM_DD) {
     
     requestPrefix <- 'http://real-chart.finance.yahoo.com/table.csv?'
     requestPostfix <- '&g=d&ignore=.csv'
-    requestString <- sprintf('%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s',
-                             requestPrefix,
-                             's=', ticker, '&', 'a=', startMonth, '&',
-                             'b=', startDay, '&', 'c=', startYear, '&',
-                             'd=', endMonth, '&', 'e=', endDay, '&',
-                             'f=', endYear, requestPostfix)
+    requestString <- paste0(requestPrefix, 's=', ticker, '&',
+                            'a=', startMonth, '&', 'b=', startDay, '&',
+                            'c=', startYear, '&', 'd=', endMonth, '&',
+                            'e=', endDay, '&', 'f=', endYear, requestPostfix)
 }
 
 ## Creates and returns a valid YQL string to request quotes for symbol ticker
