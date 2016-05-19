@@ -148,6 +148,21 @@ getDateRanges <- function(startDate, endDate,
     return(dateIntervals)
 }
 
+makeYqlQuoteRequest <- function(ticker, startYYYY_MM_DD, endYYYY_MM_DD) {
+    # change https to http stackoverflow.com/questions/23584514/23584751#23584751
+    baseQuery <- paste0("http://query.yahooapis.com/v1/public/yql",
+                        "?q=select%20*%20from%20yahoo.finance.historicaldata")
+    symbolClause <- paste0("%20where%20symbol%20%3D%20%22", ticker, "%22%20and")
+    dateClause <- paste0("%20startDate%20%3D%20%22", startYYYY_MM_DD,
+                         "%22%20and%20endDate%20%3D%20%22", endYYYY_MM_DD)
+    yqlSuffix <- paste0("%22&diagnostics=true",
+                        "&env=store%3A%2F%2Fdatatables.org",
+                        "%2Falltableswithkeys")
+    yqlRequestString <- paste0(baseQuery, symbolClause, dateClause, yqlSuffix)
+    
+    return(yqlRequestString)
+}
+
 ## Makes a single REST call to get historical stock prices from yahoo finance 
 ## and returns a dataframe with the Date, High, Low, open, close and volume for 
 ## the symbol passed in over the requested date range.
@@ -173,20 +188,8 @@ getSinglePeriodYqlQuotes <- function(ticker, startYYYY_MM_DD,
     #install.packages("XML"); install.packages("dplyr")
     cat("getSinglePeriodYqlQuotes parameters:", ticker,
         startYYYY_MM_DD, endYYYY_MM_DD, dataFrame, "\n")
+    yqlCall <- makeYqlQuoteRequest(ticker, startYYYY_MM_DD, endYYYY_MM_DD)
     library(XML)
-    library(dplyr)
-    # change https to http stackoverflow.com/questions/23584514/23584751#23584751
-    baseQuery <- paste0("http://query.yahooapis.com/v1/public/yql",
-                        "?q=select%20*%20from%20yahoo.finance.historicaldata")
-    symbolClause <- paste0("%20where%20symbol%20%3D%20%22", ticker, "%22%20and")
-    dateClause <- paste0("%20startDate%20%3D%20%22", startYYYY_MM_DD,
-                         "%22%20and%20endDate%20%3D%20%22", endYYYY_MM_DD)
-    yqlSuffix <- paste0("%22&diagnostics=true",
-                        "&env=store%3A%2F%2Fdatatables.org",
-                        "%2Falltableswithkeys")
-    
-    yqlCall <- paste0(baseQuery, symbolClause, dateClause, yqlSuffix)
-    
     doc <- xmlTreeParse(yqlCall, useInternalNodes = TRUE)
     rootNode <- xmlRoot(doc)
     quotes <- xpathSApply(rootNode, "//quote")
@@ -199,6 +202,7 @@ getSinglePeriodYqlQuotes <- function(ticker, startYYYY_MM_DD,
         date.format <- "%Y-%m-%d"
         Date <- as.Date(xpathSApply(rootNode, "//Date", xmlValue), date.format)
         # If we pass in a populated dataframe, assume we need to append to it
+        library(dplyr)
         if(is.null(dataFrame)) {
             df <- data.frame(Symbol=ticker, Date=as.character(Date),
                              High, Low, Open, Close, Volume)
