@@ -48,8 +48,8 @@ doSimulation <- function(ticker,
                          signalParms=c(fastDays=9, slowDays=18),
                          signalGen = "SignalGenMacoLongOnlyOpaat.R",
                          startBalance = 10000) {
-    source("DataManager.R")
     if(is.null(priceData)) {
+        source("DataManager.R")
         priceData <- getStockQuotes(ticker, startDate, endDate)
     }
     # addSimColumns sources StrategySimulator.R for getNetTable
