@@ -148,7 +148,47 @@ getDateRanges <- function(startDate, endDate,
     return(dateIntervals)
 }
 
-makeYqlQuoteRequest <- function(ticker, startYYYY_MM_DD, endYYYY_MM_DD) {
+## Builds and returns a string that makes a REST call to retrieve
+## quote data from finance.yahoo.com.  This is an alternative to using YQL
+## which seems to be simplier and more reliable.
+##
+## ticker - sting, a valid ticker symbol the service recognizes
+## startYYYY_MM_DD - string, start date for quotes in the form yyyy-mm-dd
+## endYYYY_MM_DD - string, end date for quotes in the form yyyy-mm-dd
+##
+## You should be able to put the string returned from this function directly
+## into a browser and the browser should download the file.
+##
+## TODO Error checking to assure that valid date-related values are being used.
+getYahooQuoteTableString <- function(ticker, startYYYY_MM_DD, endYYYY_MM_DD) {
+    startYear <- strsplit(startYYYY_MM_DD, '-')[[1]][1]
+    startMonth <- strsplit(startYYYY_MM_DD, '-')[[1]][2]
+    startMonth <- as.character(as.integer(startMonth) - 1) # make 0-based
+    startDay <- strsplit(startYYYY_MM_DD, '-')[[1]][3]
+    
+    endYear <- strsplit(endYYYY_MM_DD, '-')[[1]][1]
+    endMonth <- strsplit(endYYYY_MM_DD, '-')[[1]][2]
+    endMonth <- as.character(as.integer(endMonth) - 1) # make 0-based
+    endDay <- strsplit(endYYYY_MM_DD, '-')[[1]][3]
+    
+    requestPrefix <- 'http://real-chart.finance.yahoo.com/table.csv?'
+    requestPostfix <- '&g=d&ignore=.csv'
+    requestString <- sprintf('%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s',
+                             requestPrefix,
+                             's=', ticker, '&', 'a=', startMonth, '&',
+                             'b=', startDay, '&', 'c=', startYear, '&',
+                             'd=', endMonth, '&', 'e=', endDay, '&',
+                             'f=', endYear, requestPostfix)
+}
+
+## Creates and returns a valid YQL string to request quotes for symbol ticker
+## between start date = startYYYY_MM_DD and end date = endYYYY_MM_DD
+## ticker - sting, a valid ticker symbol the YQL recognizes
+## startYYYY_MM_DD - string, start date for quotes in the form yyyy-mm-dd
+## endYYYY_MM_DD - string, end date for quotes in the form yyyy-mm-dd
+##
+## TODO Error checking to assure that valid date-related values are being used.
+getYqlQuoteString <- function(ticker, startYYYY_MM_DD, endYYYY_MM_DD) {
     # change https to http stackoverflow.com/questions/23584514/23584751#23584751
     baseQuery <- paste0("http://query.yahooapis.com/v1/public/yql",
                         "?q=select%20*%20from%20yahoo.finance.historicaldata")
@@ -179,16 +219,22 @@ makeYqlQuoteRequest <- function(ticker, startYYYY_MM_DD, endYYYY_MM_DD) {
 ## select * from yahoo.finance.historicaldata where symbol = "YHOO" and
 ##          startDate = "2015-01-01" and endDate = "2015-12-01"
 ##
-## Resulting generated call looked like this:
+## Resulting generated call looked like this
+## (line breaks used for readability purposes only):
 ##
-## https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.historicaldata%20where%20symbol%20%3D%20%22AAPL%22%20and%20startDate%20%3D%20%222015-01-01%22%20and%20endDate%20%3D%20%222015-12-01%22&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
+## https://query.yahooapis.com/v1/public/yql?
+## q=select%20*%20from%20yahoo.finance.historicaldata%20where%20symbol
+## %20%3D%20%22AAPL%22%20and%20startDate%20%3D%20%222015-01-01%22%20and
+## %20endDate%20%3D%20%222015-12-01%22&env=store%3A%2F%2Fdatatables.org%2
+## Falltableswithkeys
+##
 ## IMPORTANT: HAD TO CHANGE https TO http FOR THE CALL TO xmlTreeParse TO WORK!
 getSinglePeriodYqlQuotes <- function(ticker, startYYYY_MM_DD,
                                      endYYYY_MM_DD, dataFrame=NULL) {
     #install.packages("XML"); install.packages("dplyr")
     cat("getSinglePeriodYqlQuotes parameters:", ticker,
         startYYYY_MM_DD, endYYYY_MM_DD, dataFrame, "\n")
-    yqlCall <- makeYqlQuoteRequest(ticker, startYYYY_MM_DD, endYYYY_MM_DD)
+    yqlCall <- getYqlQuoteString(ticker, startYYYY_MM_DD, endYYYY_MM_DD)
     library(XML)
     doc <- xmlTreeParse(yqlCall, useInternalNodes = TRUE)
     rootNode <- xmlRoot(doc)
