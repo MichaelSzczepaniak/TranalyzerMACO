@@ -15,10 +15,23 @@ lapply(list.of.packages, require, character.only=TRUE)  # load libs
 # http://www.johnmyleswhite.com/notebook/2010/08/17/unit-testing-in-r-the-bare-minimum/
 
 # change testFileRegex so it's more like the testthat convention
+# test all tests
+# test.suite <- defineTestSuite('Tranalyzer tests',
+#                               dirs = file.path('tests'),
+#                               testFileRegexp = '^(test).+\\.R',
+#                               testFuncRegexp = '^(test.)')
+
+# run tests that make YQL calls for quote data from finance.yahoo:
 test.suite <- defineTestSuite('Tranalyzer tests',
                               dirs = file.path('tests'),
-                              testFileRegexp = '^(test).+\\.R',
+                              testFileRegexp = '^(test).+(Yql).+\\.R',
                               testFuncRegexp = '^(test.)')
+
+# test only techinical indicators
+# test.suite <- defineTestSuite('Tranalyzer tests',
+#                               dirs = file.path('tests'),
+#                               testFileRegexp = '^(testTechInd).+\\.R',
+#                               testFuncRegexp = '^(test.)')
 
 test.result <- runTestSuite(test.suite)
 
