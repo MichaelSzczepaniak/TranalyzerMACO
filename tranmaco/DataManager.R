@@ -4,6 +4,7 @@ new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"
 if(length(new.packages) > 0) install.packages(new.packages)
 # load libraries
 lapply(list.of.packages, require, character.only=TRUE)  # load libs
+options(stringsAsFactors = FALSE) # want dates as strings, not factors
 
 ## Returns a string of the form yyyy-mm-dd which is deltaCount number of
 ## dateDelta time periods in the past from today. E.g. if defaults are used
@@ -86,11 +87,11 @@ getCompletedYearsBetweenDates <- function(startDate, endDate) {
 ##
 ## Precondition: startDate precedes endDate in time
 ##
-## startDate - Starting (earlier) date of the overall range to break out
-## endDate - Ending (later) date of the overall range to break out
-## daysInInterval = The number of days in each of date ranges returned except
-##                  for the most recent because it will usually be a partially
-##                  filled range
+## startDate - string: Starting (earlier) date of the overall range to break out
+## endDate - string: Ending (later) date of the overall range to break out
+## daysInInterval - integer: The number of days in each of date ranges returned
+##                  except for the most recent because it will usually be a
+##                  partially filled range
 ##
 ## The first string in each character vector (named "start") of the returned
 ## list is the starting date of a query period.  The second sting (named "end")
@@ -267,7 +268,7 @@ getSinglePeriodYqlQuotes <- function(ticker, startYYYY_MM_DD,
     return(df)
 }
 
-## Returns quote data from web service (finance.yahoo by default) for a given
+## Returns quote data from web service for a given
 ## ticker symbol ticker from startDate to endDate inclusive.
 ##
 ## This function calls getDateRanges to break up the requests to the data
@@ -321,16 +322,17 @@ getQuotesFromService <- function(ticker, startDate, endDate,
 ## as the request doesn't go back further than maxAllowableYears from today.
 ##
 ## ticker - string | ticker symbol for requested quote (e.g. AAPL or JNJ)
-## startDate - string | start/first date for requested price quotes, default
-##             is 10 years ago from todays date
-## endDate - string | end/last date for requested price quotes, default is today
-## maxAllowableYears - max # of years of quote history to request from service,
-##                     default is 10.
+## startDate - string: start/first date for requested price quotes,
+##             default is 10 years ago from todays date
+## endDate - string: end/last date for requested price quotes, default is today
+## maxAllowableYears - integer: max # of years of quote history to request
+##                     from service, default is 10.
 getStockQuotes <- function(ticker,
-                           startDate=agoFromToday(), 
+                           startDate=agoFrom(), 
                            endDate=as.character(Sys.Date()),
                            maxAllowableYears=10,
                            dataDir='./data/') {
+    sDateObj <- as.Date(startDate); eDateObj <- as.Date(endDate) # for comp's
     cat("getStockQuotes parameters:\n", "ticker=", ticker, "\n",
         "startDate=", startDate, ", endDate=", endDate, "\n",
         "maxAllowableYears=", maxAllowableYears, "\n")
@@ -342,11 +344,11 @@ getStockQuotes <- function(ticker,
     if(file.exists(tickerFile)) {
         # quote file exists for ticker, but does is have all the data requested?
         existingQuotesAppended <- FALSE
-        quotes <- read.csv(tickerFile, as.is=TRUE) # data existing local
+        quotes <- read.csv(tickerFile, as.is=TRUE)
         startDataDate <- as.Date(quotes$Date[1])
         endDataDate <- as.Date(quotes$Date[nrow(quotes)])
         # check if existing data is current enough
-        if(as.Date(endDate) > endDataDate) {
+        if(eDateObj > endDataDate) {
             # Requesting data that is not current enough. Need to
             # bring existing quotes up-to-date & append quote file.
             addStartDate <- as.character(endDataDate+1)
@@ -358,7 +360,7 @@ getStockQuotes <- function(ticker,
             }
         }
         # check if existing data goes back in time far enough
-        if(startDataDate > startDate) {
+        if(startDataDate > sDateObj) {
             # existing data doesn't go back as far as being requested
             if(getCompletedYearsBetweenDates(startDataDate, endDataDate) <
                maxAllowableYears) {
@@ -394,6 +396,11 @@ getStockQuotes <- function(ticker,
     }
     else {
         # quote file doesn't exist yet: query, write, then read written file
+        # TODO startDate and endDate allowable?
+        cat('getStockQuotes: No', tickerFile, 'exists.',
+            'Getting quote between', startDate, 'and', endDate, '...\n')
+        quotes <- getQuotesFromService(ticker, startDate, endDate)
+        cat('getStockQuotes: Got quotes. Writing', tickerFile, '...')
         writeQuotes(tickers = c(ticker), startDate, endDate, dataDir)
         quotes <- read.csv(tickerFile, as.is=TRUE)
     }
@@ -425,14 +432,14 @@ writeQuotes <- function(tickers, startDate, endDate=as.character(Sys.Date()),
 getDemoQuotes <- function(ticker, startDate,
                           endDate=as.character(Sys.Date())) {
     library(dplyr)
-    # Next 3 lines working running shiny thru loopback, but not deployed
+    # Next 3 lines worked running shiny thru loopback, but not deployed
 #     demoQuotesPrefix <- "http://raw.githubusercontent.com/MichaelSzczepaniak/"
 #     projectQuoteData <- "TradeAnalyzer/master/tranalyzer/data/"
 #     demoQuotesPrefix <- paste0(demoQuotesPrefix, projectQuoteData)
     demoQuotesPrefix <- "./data/"
     demoQuotesPath <- paste0(demoQuotesPrefix, ticker, ".csv")
     
-    quotes <- read.csv(demoQuotesPath, stringsAsFactors = FALSE)[, -1]
+    quotes <- read.csv(demoQuotesPath, as.is=TRUE)[, -1]
     quotes$Date <- as.Date(quotes$Date)
     quotes <- filter(quotes, Date >= as.Date(startDate) & Date <=as.Date(endDate))
     quotes$Date <- as.character(quotes$Date)
