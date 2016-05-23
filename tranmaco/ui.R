@@ -43,7 +43,7 @@ fluidPage(
                      10000, min = 5000, max = 1000000, step = 500),
         selectInput('inPosMgmt', label=h4("Position Management:"),
                     choices=pmOptionsList, selected=1),
-        actionButton('inRunSim', 'Run Simulation')
+        actionButton('inRunSimButton', 'Run Simulation')
 
     ),
     mainPanel(
@@ -52,8 +52,14 @@ fluidPage(
                 h4('Quote Data Status:'),
                 verbatimTextOutput("outQuoteDataStatus"),
                 h4('Simulation Parameters:'),
-                verbatimTextOutput("outSimParams")
-                
+                verbatimTextOutput("outSimParams"),
+                h4("Trades using this signal and position management:"),
+                h6("(ProfitLoss calculation assumes $10 commission for each buy or sell)"),
+                div(style='height:240px; overflow-y: scroll',
+                    tableOutput("outTrades")
+                ),
+                h4('Net Trading Profit/Loss:'),
+                verbatimTextOutput("outTradesNet")
             ),
             tabPanel("Graphics", h3("Trades identified using this signal:"),
                      h5(paste0("In the chart below, BUY signal triangles are ",

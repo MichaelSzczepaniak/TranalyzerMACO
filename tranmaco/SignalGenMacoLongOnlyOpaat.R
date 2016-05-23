@@ -30,6 +30,8 @@ appendMAcolumns <- function(stockPrices, signalParms=c(fastDays=8, slowDays=16),
                             maType='simple', calcCol='Close') {
     fastDays <- signalParms["fastDays"]
     slowDays <- signalParms["slowDays"]
+    # cat('appendMAcolumns: fastDays=', fastDays, "| slowDays=", slowDays, '\n')
+    # cat('appendMAcolumns:  nrow(stockPrices)=', nrow(stockPrices), '\n')
     calcPrices <- stockPrices[, as.character(calcCol)]
     fastName <- "FastMa"
     slowName <- "SlowMa"
@@ -42,7 +44,7 @@ appendMAcolumns <- function(stockPrices, signalParms=c(fastDays=8, slowDays=16),
         stockPrices[, slowName] <- calcEma(calcPrices, slowDays)
     }
     
-    
+    # cat('appendMAcolumns - first row of returned stockPrices:\n'); print(stockPrices[1,])
     return(stockPrices)
 }
 
@@ -91,6 +93,7 @@ appendSignals <- function(stockPrices, calcCol="Close", tol=0.003) {
     smaPos <- getMaSignals(prices, stockPrices$FastMa, stockPrices$SlowMa, tol)
     stockPrices[, "Signal"] <- smaPos
     
+    # cat('appendSignals - first row of returned stockPrices:\n'); print(stockPrices[1,])
     return(stockPrices)
 }
 
@@ -171,6 +174,7 @@ getActionsBHS <- function(pricesWithSignal) {
     pricesWithSignal[, "Actions"] <- as.factor(actions)
     pricesWithSignal[, "Open_Position"] <- openPosition
     
+    # cat('getActionsBHS - first row of returned stockPrices:\n'); print(pricesWithSignal[1,])
     return(pricesWithSignal)
 }
 

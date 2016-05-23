@@ -1,0 +1,12 @@
+# files used for local dev
+*.RData
+*.RHistory
+*.ods
+!bugs.ods
+sandbox.R
+# directories
+dev_data/
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata

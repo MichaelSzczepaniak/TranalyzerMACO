@@ -31,6 +31,8 @@ shinyServer(
             simConfig()
         })
         
+        
+        
         output$outQuoteDataStatus <- eventReactive(input$inQueryQuotes, {
             # http://stackoverflow.com/questions/33662033/shiny-how-to-make-reactive-value-initialize-with-default-value
             if(input$inQueryQuotes > 0) {
@@ -54,7 +56,37 @@ shinyServer(
             
         }, ignoreNULL = FALSE)
         
+        runSim <- eventReactive(input$inRunSimButton, {
+            if(input$inFastSlowMavg[2] > input$inFastSlowMavg[1]) {
+                sim <- doSimulation(input$ticker,
+                                    priceData=NULL,
+                                    as.character(input$inQueryDateRange[1]),
+                                    as.character(input$inQueryDateRange[2]),
+                                    signalParms=c(fastDays=input$inFastSlowMavg[1],
+                                                  slowDays=input$inFastSlowMavg[2]),
+                                    maType = input$inMovAvg,
+                                    signalGen = 'SignalGenMacoLongOnlyOpaat.R',
+                                    startBalance=input$inAccBalance)
+                
+            } else {
+                data.frame(
+                    Error_Message=c("Slow SMA days must be larger than Fast SMA days.",
+                                    "Fast SMA is the left circle slider and Slow SMA is the right.",
+                                    "It looks like you put these circles on top of each other.",
+                                    "Please make Slow SMA days larger than Fast SMA days and try again.")
+                )
+            }
+            
+            sim
+        })
         
+        output$outTrades <- renderTable({
+            runSim()
+        })
+        
+        output$outTradesNet <- renderPrint(
+                netStrategyPL(runSim())
+            )
         
     }
 )

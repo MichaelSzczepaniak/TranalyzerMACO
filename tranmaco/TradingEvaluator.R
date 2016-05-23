@@ -11,13 +11,16 @@
 # }
 
 ## 
-addSimColumns <- function(prices, signalGen, sigParms, startBalance) {
+addSimColumns <- function(prices, signalGen, sigParms, maType, startBalance) {
     source(signalGen)
     # add MA cols and calc them based on closing price
-    priceData <- appendMAcolumns(prices, sigParms, calcCol="Close")
+    # cat('addSimColumns - first row of prices:\n'); print(prices[1,])
+    # cat('\naddSimColumns - sigParms:\n'); print(sigParms)
+    priceData <- appendMAcolumns(prices, sigParms, maType, calcCol="Close")
     priceData <- appendSignals(priceData) # add col of 1, -1, 0 signals
     priceData <- getActionsBHS(priceData) # add Actions & Open_Position col's
     source("StrategySimulator.R")
+    # cat('addSimColumns - startBalance =', startBalance)
     priceData <- allInAllOutOaatOnlyLong(priceData, startBalance)
     
     return(priceData)
@@ -46,16 +49,22 @@ doSimulation <- function(ticker,
                          startDate = as.character(Sys.Date()-365),
                          endDate = as.character(Sys.Date()),
                          signalParms=c(fastDays=9, slowDays=18),
+                         maType = 'Simple',
                          signalGen = "SignalGenMacoLongOnlyOpaat.R",
                          startBalance = 10000) {
     if(is.null(priceData)) {
         source("DataManager.R")
         priceData <- getStockQuotes(ticker, startDate, endDate)
     }
+    
+    # cat('doSimulation - priceData[1,]:\n'); print(priceData[1,])
+    
     # addSimColumns sources StrategySimulator.R for getNetTable
-    priceData <- addSimColumns(priceData, signalGen, signalParms, startBalance)
+    priceData <- addSimColumns(priceData, signalGen, signalParms, maType,
+                               startBalance)
     netTable <- getNetTable(priceData)
     
+    # cat('doSimulation - netTable[1,]:\n'); print(netTable[1,])
     return(netTable)
 }
 

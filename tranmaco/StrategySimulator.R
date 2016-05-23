@@ -85,5 +85,6 @@ getNetTable <- function(simResults, priceCol="Close",
 }
 
 netStrategyPL <- function(netTable) {
-    return(sum(netTable$ProfitLoss))
+    plSum <- sum(netTable$ProfitLoss)
+    return(plSum)
 }
