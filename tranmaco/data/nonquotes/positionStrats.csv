@@ -1,2 +1,3 @@
-Position_Sizing_Strategy,Description
-AIAO-OPAAT-OL,"All in, all out, one position at a time, only long positions allowed"
+PSS_Type,option,description
+AIAO-OPAAT-OL,1,"All in, all out, one position at a time, only long positions allowed"
+AIAO-OPAAT-LAS,2,"All in, all out, one position at a time, long and short positions"

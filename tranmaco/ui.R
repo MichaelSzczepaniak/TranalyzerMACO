@@ -17,6 +17,9 @@ simEndDate <- as.character(Sys.Date())
 simStartDate <- as.character(Sys.Date() - 365)
 simStartDateMin = tenYearsAgoToday(); simEndDateMax = simEndDate
 
+# Get company drop down values
+companyDataUrl <- "./data"
+
 # Get moving average options for radio buttons
 movingAvgUrl <- "./data/nonquotes/moving_avgs.csv"
 maOptions <- read.csv(movingAvgUrl, stringsAsFactors = FALSE)
@@ -25,7 +28,9 @@ maOptionsList <- makeOptList(maOptions$MA_Type, maOptions$option)
 # Get postion mgmt strategies to populate Position Management select list
 posMgmtStratsUrl <- "./data/nonquotes/positionStrats.csv"
 pmOptions <- read.csv(posMgmtStratsUrl, stringsAsFactors = FALSE)
-pmOptionsList <- as.list((pmOptions$Position_Sizing_Strategy))
+# pmOptionsList <- as.list((pmOptions$Position_Sizing_Strategy))
+# only first position mgmt option is implemented
+pmOptionsList <- makeOptList(pmOptions$PSS_Type[1], pmOptions$option[1])
 
 fluidPage(
     headerPanel("MACO Analyzer"),
@@ -62,14 +67,16 @@ fluidPage(
                 verbatimTextOutput("outTradesNet")
             ),
             tabPanel("Graphics", h3("Trades identified using this signal:"),
-                     h5(paste0("In the chart below, BUY signal triangles are ",
-                               "shifted down and SELL triangles are shifted ",
+                     h5(paste0("In the chart below, green BUY signal triangles are ",
+                               "shifted down and red SELL triangles are shifted ",
                                "up so signals are more visible:"))
                      
             ),
-            tabPanel("Signal", h3(textOutput("oidTradeSignal"))
+            tabPanel("Signal", h3('TBD')
+                     
+            ),
+            tabPanel("Quote Data", h3('TBD'))
                      
             )
         )
     )
-)

@@ -7,6 +7,7 @@ shinyServer(
         
         simConfig <- function() {
             maToken <- 'SMA'
+            # cat('input$inMovAvg =', input$inMovAvg, '\n')
             if(input$inMovAvg == 2) {
                 maToken <- 'EMA'
             } else if(input$inMovAvg == 3) {
@@ -14,13 +15,18 @@ shinyServer(
             }
             maToken <- sprintf('%s%s%s%s%s%s', maToken, '(', input$inFastSlowMavg[1],
                                ',', input$inFastSlowMavg[2], ')')
-
-
-            sabToken <- sprintf('%s%d', 'Start Bal=$', 10000)
+            # sab = starting account balance
+            sabToken <- sprintf('%s%d', 'Start Bal=$', input$inAccBalance)
             if(input$inAccBalance != 10000) {
                 sabToken <- sprintf('%s%d', 'Start Bal=$', input$inAccBalance)
             }
-            pmToken <- sprintf('%s%s', 'PM=', input$inPosMgmt)
+            pmToken <- 'AIAO-OPAAT-OL'
+            if(input$inPosMgmt == 2) {
+                pmToken <- 'AIAO-OPAAT-LAS'
+            } else if(input$inPosMgmt == 3) {
+                pmToken <- '???'  #TODO
+            }
+            pmToken <- sprintf('%s%s', 'PM=', pmToken)
 
             params <- sprintf('%s%s%s%s%s', maToken, ' | ',
                                             sabToken, ' | ', pmToken)
@@ -84,9 +90,13 @@ shinyServer(
             runSim()
         })
         
-        output$outTradesNet <- renderPrint(
-                netStrategyPL(runSim())
-            )
+        getNetPL <- function() {
+            simResult <- runSim()
+            netPL <- netStrategyPL(simResult)
+            netPL
+        }
+        
+        output$outTradesNet <- renderPrint(getNetPL())
         
     }
 )
