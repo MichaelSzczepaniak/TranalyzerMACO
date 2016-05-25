@@ -333,9 +333,9 @@ getStockQuotes <- function(ticker,
                            maxAllowableYears=10,
                            dataDir='./data/') {
     sDateObj <- as.Date(startDate); eDateObj <- as.Date(endDate) # for comp's
-    cat("getStockQuotes parameters:\n", "ticker=", ticker, "\n",
-        "startDate=", startDate, ", endDate=", endDate, "\n",
-        "maxAllowableYears=", maxAllowableYears, "\n")
+    # cat("getStockQuotes parameters:\n", "ticker=", ticker, "\n",
+    #     "startDate=", startDate, ", endDate=", endDate, "\n",
+    #     "maxAllowableYears=", maxAllowableYears, "\n")
     # TODO handle invalid ticker
     today <- as.character(Sys.Date())
     quoteCols <- c("Date", "High", "Low", "Open", "Close", "Volume")
@@ -397,10 +397,10 @@ getStockQuotes <- function(ticker,
     else {
         # quote file doesn't exist yet: query, write, then read written file
         # TODO startDate and endDate allowable?
-        cat('getStockQuotes: No', tickerFile, 'exists.',
-            'Getting quote between', startDate, 'and', endDate, '...\n')
+        # cat('getStockQuotes: No', tickerFile, 'exists.',
+        #     'Getting quote between', startDate, 'and', endDate, '...\n')
         quotes <- getQuotesFromService(ticker, startDate, endDate)
-        cat('getStockQuotes: Got quotes. Writing', tickerFile, '...')
+        # cat('getStockQuotes: Got quotes. Writing', tickerFile, '...')
         writeQuotes(tickers = c(ticker), startDate, endDate, dataDir)
         quotes <- read.csv(tickerFile, as.is=TRUE)
     }
