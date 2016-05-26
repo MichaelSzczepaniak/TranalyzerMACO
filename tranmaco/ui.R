@@ -1,24 +1,19 @@
 
-## Returns the date that's 10 years ago today in the format:
-## yyyy-mm-dd.
-tenYearsAgoToday <- function() {
-    today <- as.POSIXlt(Sys.Date())
-    today$year <- today$year - 10
-    return(as.character(today))
-}
 
 makeOptList <- function(labels, values) {
     names(values) <- labels
     return(as.list(values))
 }
 
-# Default dates to use with live data
-simEndDate <- as.character(Sys.Date())
-simStartDate <- as.character(Sys.Date() - 365)
-simStartDateMin = tenYearsAgoToday(); simEndDateMax = simEndDate
+# Demo data default dates
+simStartDateMin = '2005-01-03'; simEndDateMax = '2016-05-24'
+simStartDate <- '2014-05-24'  # default to 2 yrs. of data
+simEndDate <- '2016-05-24'
 
 # Get company drop down values
 companyDataUrl <- "./data"
+demoQuoteDataFiles <- dir('./data', '*.csv')
+demoTickersList <- strsplit(demoQuoteDataFiles, '.csv')
 
 # Get moving average options for radio buttons
 movingAvgUrl <- "./data/nonquotes/moving_avgs.csv"
@@ -35,11 +30,16 @@ pmOptionsList <- makeOptList(pmOptions$PSS_Type[1], pmOptions$option[1])
 fluidPage(
     headerPanel("MACO Analyzer"),
     sidebarPanel(
-        textInput('ticker', label=h4("Company:")),
+        # http://shiny.rstudio.com/gallery/selectize-examples.html example #6
+        selectizeInput('inTicker', label=h4("Company:"),
+                    choices=demoTickersList,
+                    options = list(
+                        placeholder = 'Select Ticker',
+                        onInitialize = I('function() { this.setValue(""); }')
+                    )),
         dateRangeInput('inQueryDateRange', label = h4("Quotes Date Range:"),
                        start=simStartDate, end=simEndDate,
                        min=simStartDateMin, max=simEndDateMax),
-        actionButton('inQueryQuotes', 'Get Quote Data'),
         radioButtons('inMovAvg', label=h4("Moving Average (MA):"),
                      choices=maOptionsList, selected=1, inline = TRUE),
         sliderInput('inFastSlowMavg', h4("Fast & Slow MA Days"),
