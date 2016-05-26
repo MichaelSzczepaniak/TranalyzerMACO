@@ -37,35 +37,56 @@ shinyServer(
             simConfig()
         })
         
+        getQuotes <- function() {
+            # cat(paste0('init ticker: [', input$inTicker, '], is.null=',
+            #            is.null(input$inTicker), ', length=',
+            #            length(input$inTicker), ', empty sting? ',
+            #            (input$inTicker == ''), '\n'
+            #            )
+            #     )
+            startDateStr <- as.character(input$inQueryDateRange[1])
+            endDateStr <- as.character(input$inQueryDateRange[2])
+            pdat <- getDemoQuotes(input$inTicker, startDateStr, endDateStr)
+            pdat
+        }
         
-        
-        output$outQuoteDataStatus <- eventReactive(input$inQueryQuotes, {
-            # http://stackoverflow.com/questions/33662033/shiny-how-to-make-reactive-value-initialize-with-default-value
-            if(input$inQueryQuotes > 0) {
+        getQuotesObj <- function() {
+            quoteStatusMsg <- paste0('Select Company ticker to acquire quote data.')
+            pdat <- NULL
+            if(input$inTicker != '') {
                 startDateStr <- as.character(input$inQueryDateRange[1])
                 endDateStr <- as.character(input$inQueryDateRange[2])
-                pdat <- getStockQuotes(input$ticker, startDateStr, endDateStr)
+                # pdat <- getDemoQuotes(input$inTicker, startDateStr, endDateStr)
+                pdat <- getQuotes()
                 quoteDateRange <- sprintf('%s%s%s%s', 'from ',
                                           startDateStr, ' to ', endDateStr)
                 if(nrow(pdat) > 0) {
-                    sprintf('%s%s%s%s', input$ticker, ' quotes ', quoteDateRange,
-                            ' acquired.')
+                    quoteStatusMsg <- sprintf('%s%s%s%s', input$inTicker,
+                                              ' quotes ', quoteDateRange,
+                                              ' acquired.')
                 } else {
-                    sprintf('%s%s%s%s', input$ticker, ' quotes ', quoteDateRange,
-                            ' NOT acquired.')
+                    quoteStatusMsg <- sprintf('%s%s%s%s', input$inTicker,
+                                              ' quotes ', quoteDateRange,
+                                              ' NOT acquired.')
                 }
                 
                 
-            } else {
-                sprintf('%s', "NO QUOTE DATA: 'Get Quote Data' before 'Run Simulation'.")
             }
             
-        }, ignoreNULL = FALSE)
+            quoteData <- list(quoteStatusMsg, pdat)
+            
+            quoteData
+        }
+        
+        output$outQuoteDataStatus <- renderText({
+            quoteStatus <- getQuotesObj()[[1]]
+            quoteStatus
+        })
         
         runSim <- eventReactive(input$inRunSimButton, {
             if(input$inFastSlowMavg[2] > input$inFastSlowMavg[1]) {
                 sim <- doSimulation(input$ticker,
-                                    priceData=NULL,
+                                    priceData=getQuotesObj()[[2]],
                                     as.character(input$inQueryDateRange[1]),
                                     as.character(input$inQueryDateRange[2]),
                                     signalParms=c(fastDays=input$inFastSlowMavg[1],

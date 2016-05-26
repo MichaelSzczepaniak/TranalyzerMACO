@@ -7,7 +7,7 @@ makeOptList <- function(labels, values) {
 
 # Demo data default dates
 simStartDateMin = '2005-01-03'; simEndDateMax = '2016-05-24'
-simStartDate <- '2014-05-24'  # default to 2 yrs. of data
+simStartDate <- '2014-05-25'  # default to 2 yrs. of data
 simEndDate <- '2016-05-24'
 
 # Get company drop down values
@@ -67,9 +67,11 @@ fluidPage(
                 verbatimTextOutput("outTradesNet")
             ),
             tabPanel("Graphics", h3("Trades identified using this signal:"),
-                     h5(paste0("In the chart below, green BUY signal triangles are ",
-                               "shifted down and red SELL triangles are shifted ",
-                               "up so signals are more visible:"))
+                     h5(paste0("In the chart below, green triangles point to ",
+                               "the BUY signals and are shifted down below ",
+                               "the signals.  The red triangles point to the ",
+                               "SELL signals and are shifted up above the ",
+                               "signals to make them easier to see:"))
                      
             ),
             tabPanel("Signal", h3('TBD')

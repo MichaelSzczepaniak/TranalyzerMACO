@@ -45,17 +45,13 @@ addSimColumns <- function(prices, signalGen, sigParms, maType, startBalance) {
 ## startingBalance - starting balance used in simulating the strategy with the
 ##                   given set of parameters
 doSimulation <- function(ticker,
-                         priceData=NULL,
+                         priceData,
                          startDate = as.character(Sys.Date()-365),
                          endDate = as.character(Sys.Date()),
                          signalParms=c(fastDays=9, slowDays=18),
                          maType = 'Simple',
                          signalGen = "SignalGenMacoLongOnlyOpaat.R",
                          startBalance = 10000) {
-    if(is.null(priceData)) {
-        source("DataManager.R")
-        priceData <- getStockQuotes(ticker, startDate, endDate)
-    }
     
     # cat('doSimulation - priceData[1,]:\n'); print(priceData[1,])
     
