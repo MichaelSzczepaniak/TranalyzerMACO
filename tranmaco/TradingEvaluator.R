@@ -16,7 +16,7 @@ addSimColumns <- function(prices, signalGen, sigParms, maType, startBalance) {
     # add MA cols and calc them based on closing price
     # cat('addSimColumns - first row of prices:\n'); print(prices[1,])
     # cat('\naddSimColumns - sigParms:\n'); print(sigParms)
-    priceData <- appendMAcolumns(prices, sigParms, maType, calcCol="Close")
+    priceData <- appendMAcolumns(prices, sigParms, maType, calcCol="Adj.Close")
     priceData <- appendSignals(priceData) # add col of 1, -1, 0 signals
     priceData <- getActionsBHS(priceData) # add Actions & Open_Position col's
     source("StrategySimulator.R")
@@ -48,7 +48,7 @@ doSimulation <- function(ticker,
                          startDate = as.character(Sys.Date()-365),
                          endDate = as.character(Sys.Date()),
                          signalParms=c(fastDays=9, slowDays=18),
-                         maType = 'Simple',
+                         maType = 'SMA',
                          signalGen = "SignalGenMacoLongOnlyOpaat.R",
                          startBalance = 10000) {
     
@@ -77,9 +77,10 @@ makeTradeSignalsPlot <- function(ticker, quoteData, maType,
     priceData <- addSimColumns(priceData, signalGen, signalParms,
                                maType, startBalance)
     x <- as.Date(priceData$Date) # x axis values
-    plot(x, y=priceData$Close, type="l", lwd=2,
+    plot(x, y=priceData$Adj.Close, type="l", lwd=2,
          col='black', xlab="Date", ylab="Price ($ USD)")
-    title(paste0("Trade signals for ", ticker, " using SMA cross-over"))
+    title(paste0("Trade Signals for ", ticker, " Using ", maType,
+                 " Cross-Over"))
     lines(x, y=priceData$FastMa, col='red')
     lines(x, y=priceData$SlowMa, col='blue')
     # get the sell points
@@ -96,7 +97,7 @@ makeTradeSignalsPlot <- function(ticker, quoteData, maType,
     fastMa <- paste0("Fast MA ", signalParms["fastDays"])
     slowMa <- paste0("Slow MA ", signalParms["slowDays"])
     legend('bottom',
-           c("Close Price", fastMa, slowMa, "Buy Signal", "Sell Signal"),
+           c("Adj.Close", fastMa, slowMa, "Buy Signal", "Sell Signal"),
            lty=c(1,1,1,0,0), pch=c(NA, NA, NA, 2, 6),
            col=c('black', 'red', 'blue', 'green', 'red'))
 }
