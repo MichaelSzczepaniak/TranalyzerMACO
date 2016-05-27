@@ -20,6 +20,7 @@ shinyServer(
             if(input$inAccBalance != 10000) {
                 sabToken <- sprintf('%s%d', 'Start Bal=$', input$inAccBalance)
             }
+            # TODO need better way handle many position management strat's
             pmToken <- 'AIAO-OPAAT-OL'
             if(input$inPosMgmt == 2) {
                 pmToken <- 'AIAO-OPAAT-LAS'
@@ -85,14 +86,14 @@ shinyServer(
         
         runSim <- eventReactive(input$inRunSimButton, {
             if(input$inFastSlowMavg[2] > input$inFastSlowMavg[1]) {
-                sim <- doSimulation(input$ticker,
+                sim <- doSimulation(ticker=input$ticker,
                                     priceData=getQuotesObj()[[2]],
-                                    as.character(input$inQueryDateRange[1]),
-                                    as.character(input$inQueryDateRange[2]),
+                                    startDate=as.character(input$inQueryDateRange[1]),
+                                    endDate=as.character(input$inQueryDateRange[2]),
                                     signalParms=c(fastDays=input$inFastSlowMavg[1],
                                                   slowDays=input$inFastSlowMavg[2]),
                                     maType = input$inMovAvg,
-                                    signalGen = 'SignalGenMacoLongOnlyOpaat.R',
+                                    signalGen='SignalGenMacoLongOnlyOpaat.R',
                                     startBalance=input$inAccBalance)
                 
             } else {
@@ -118,6 +119,39 @@ shinyServer(
         }
         
         output$outTradesNet <- renderPrint(getNetPL())
+        
+        ## Creates the upper trade signals plot in Graphics tab
+        ## Note: makeTradeSignalsPlot impl'd in TradingEvaluator.R
+        tradeSignalPlot <- eventReactive(input$inRunSimButton, {
+            makeTradeSignalsPlot(input$ticker, getQuotesObj()[[2]],
+                                 input$inMovAvg,
+                                 as.character(input$queryDateRange[1]),
+                                 as.character(input$queryDateRange[2]),
+                                 signalParms=c(fastDays=input$inFastSlowMavg[1],
+                                               slowDays=input$inFastSlowMavg[2]),
+                                 signalGen="SignalGenMacoLongOnlyOpaat.R",
+                                 startBalance=input$inAccBalance,
+                                 shift=0.02)
+        })
+        
+        resultsHist <- eventReactive(input$inRunSimButton, {
+            makeTradesResultsHist(input$ticker,
+                                  as.character(input$queryDateRange[1]),
+                                  as.character(input$queryDateRange[2]),
+                                  runSim(),
+                                  signalParms=c(fastDays=input$inFastSlowMavg[1],
+                                                slowDays=input$inFastSlowMavg[2]),
+                                  signalGen="SignalGenMacoLongOnlyOpaat.R",
+                                  startBalance=input$inAccBalance)
+        })
+        
+        output$oidTradeSignalsPlot <- renderPlot({
+            tradeSignalPlot()
+        })
+        
+        output$oidTradesResultsHist <- renderPlot({
+            resultsHist()
+        })
         
     }
 )

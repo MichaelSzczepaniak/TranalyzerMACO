@@ -71,8 +71,10 @@ fluidPage(
                                "the BUY signals and are shifted down below ",
                                "the signals.  The red triangles point to the ",
                                "SELL signals and are shifted up above the ",
-                               "signals to make them easier to see:"))
-                     
+                               "signals to make them easier to see:")),
+                     plotOutput("oidTradeSignalsPlot"),
+                     h3("Simulated trade results using identified trades:"),
+                     plotOutput("oidTradesResultsHist")
             ),
             tabPanel("Signal", h3('TBD')
                      

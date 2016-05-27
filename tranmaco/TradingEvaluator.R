@@ -31,8 +31,7 @@ addSimColumns <- function(prices, signalGen, sigParms, maType, startBalance) {
 ## signal generator signalGen.
 ##
 ## ticker - Ticker symbol for stock to run signalGen on (e.g. JNJ, AAPL, etc.)
-## priceData - Price data to use for simulation.  If it's passed in, use it.
-##             If it's not passed in, query for it.
+## priceData - Price data to use for simulation.
 ## signalParms - Vector of named values used by signalGen to generate signals.
 ##               Default is a vector with the fast and slow SMA periods used by
 ##               SignalGenMacoLongOnlyOpaat.R
@@ -56,8 +55,8 @@ doSimulation <- function(ticker,
     # cat('doSimulation - priceData[1,]:\n'); print(priceData[1,])
     
     # addSimColumns sources StrategySimulator.R for getNetTable
-    priceData <- addSimColumns(priceData, signalGen, signalParms, maType,
-                               startBalance)
+    priceData <- addSimColumns(priceData, signalGen, signalParms,
+                               maType, startBalance)
     netTable <- getNetTable(priceData)
     
     # cat('doSimulation - netTable[1,]:\n'); print(netTable[1,])
@@ -65,42 +64,47 @@ doSimulation <- function(ticker,
 }
 
 ## Create plot that identifies the trades called out by the signal
-## shift - fraction amount to shift buy signal point down and sell signal up
+## shift - fraction amount to shift buy signal marker point down and sell
+##         signal marker point up to make actual signal easier to see
 ## TODO need a solution for configuring legend position
-makeTradeSignalsPlot <- function(ticker, startDate ,endDate, signalParms,
-                                 signalGen, startBalance, shift) {
+makeTradeSignalsPlot <- function(ticker, quoteData, maType,
+                                 startDate ,endDate,
+                                 signalParms, signalGen,
+                                 startBalance, shift) {
     source("DataManager.R")
     # priceData <- getDemoQuotes(ticker, startDate, endDate) # read repo csv
-    priceData <- getStockQuotes(ticker, startDate, endDate) # query for data
-    priceData <- addSimColumns(priceData, signalGen, signalParms, startBalance)
+    priceData <- quoteData #getStockQuotes(ticker, startDate, endDate)
+    priceData <- addSimColumns(priceData, signalGen, signalParms,
+                               maType, startBalance)
     x <- as.Date(priceData$Date) # x axis values
     plot(x, y=priceData$Close, type="l", lwd=2,
          col='black', xlab="Date", ylab="Price ($ USD)")
     title(paste0("Trade signals for ", ticker, " using SMA cross-over"))
-    lines(x, y=priceData$FastSma, col='red')
-    lines(x, y=priceData$SlowSma, col='blue')
+    lines(x, y=priceData$FastMa, col='red')
+    lines(x, y=priceData$SlowMa, col='blue')
     # get the sell points
     sells <- filter(priceData, Actions=="SELL")
     exitDates <- as.Date(sells$Date)
-    sellSignals <- pmax(sells$FastSma, sells$SlowSma) * (1 + shift)
+    sellSignals <- pmax(sells$FastMa, sells$SlowMa) * (1 + shift) # sell markers
     points(exitDates, sellSignals, pch=6, cex=1.75, col='red', lwd=2)
     completeCount <- length(sells$Shares)
+    # get the buy points
     buys <- filter(priceData, Actions=="BUY")
     entryDates <- as.Date(buys$Date)
-    buySignals <- pmin(buys$FastSma, buys$SlowSma) * (1 - shift)
+    buySignals <- pmin(buys$FastMa, buys$SlowMa) * (1 - shift)
     points(entryDates, buySignals, pch=2, cex=1.75, col='green', lwd=2)
-    fastSma <- paste0("Fast SMA ", signalParms["fastDays"])
-    slowSma <- paste0("Slow SMA ", signalParms["slowDays"])
+    fastMa <- paste0("Fast MA ", signalParms["fastDays"])
+    slowMa <- paste0("Slow MA ", signalParms["slowDays"])
     legend('bottom',
-           c("Close Price", fastSma, slowSma, "Buy Signal", "Sell Signal"),
+           c("Close Price", fastMa, slowMa, "Buy Signal", "Sell Signal"),
            lty=c(1,1,1,0,0), pch=c(NA, NA, NA, 2, 6),
            col=c('black', 'red', 'blue', 'green', 'red'))
 }
 
-makeTradesResultsHist <- function(ticker, startDate,endDate,
+makeTradesResultsHist <- function(ticker, startDate, endDate, sim,
                                   signalParms, signalGen, startBalance) {
-    sim <- doSimulation(ticker, startDate, endDate,
-                        signalParms, signalGen, startBalance)
+    # sim <- doSimulation(ticker, startDate, endDate,
+    #                     signalParms, signalGen, startBalance)
     histTitle <- paste0("Results of completed ", ticker,
                         " trades using SMA cross-over")
     hist(sim$ProfitLoss, main=histTitle, xlab="Trade Net ($ USD)",
