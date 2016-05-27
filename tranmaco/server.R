@@ -5,7 +5,7 @@ source("StrategySimulator.R")
 shinyServer(
     function(input, output) {
         
-        simConfig <- function() {
+        getMaToken <- function() {
             maToken <- 'SMA'
             # cat('input$inMovAvg =', input$inMovAvg, '\n')
             if(input$inMovAvg == 2) {
@@ -13,6 +13,11 @@ shinyServer(
             } else if(input$inMovAvg == 3) {
                 maToken <- 'WMA'  # TODO
             }
+            maToken
+        }
+        
+        simConfig <- function() {
+            maToken <- getMaToken()
             maToken <- sprintf('%s%s%s%s%s%s', maToken, '(', input$inFastSlowMavg[1],
                                ',', input$inFastSlowMavg[2], ')')
             # sab = starting account balance
@@ -92,7 +97,7 @@ shinyServer(
                                     endDate=as.character(input$inQueryDateRange[2]),
                                     signalParms=c(fastDays=input$inFastSlowMavg[1],
                                                   slowDays=input$inFastSlowMavg[2]),
-                                    maType = input$inMovAvg,
+                                    maType = getMaToken(),
                                     signalGen='SignalGenMacoLongOnlyOpaat.R',
                                     startBalance=input$inAccBalance)
                 
@@ -123,8 +128,8 @@ shinyServer(
         ## Creates the upper trade signals plot in Graphics tab
         ## Note: makeTradeSignalsPlot impl'd in TradingEvaluator.R
         tradeSignalPlot <- eventReactive(input$inRunSimButton, {
-            makeTradeSignalsPlot(input$ticker, getQuotesObj()[[2]],
-                                 input$inMovAvg,
+            makeTradeSignalsPlot(input$inTicker, getQuotesObj()[[2]],
+                                 getMaToken(),
                                  as.character(input$queryDateRange[1]),
                                  as.character(input$queryDateRange[2]),
                                  signalParms=c(fastDays=input$inFastSlowMavg[1],

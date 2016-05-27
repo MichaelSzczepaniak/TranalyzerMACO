@@ -58,7 +58,7 @@ fluidPage(
                 verbatimTextOutput("outQuoteDataStatus"),
                 h4('Simulation Parameters:'),
                 verbatimTextOutput("outSimParams"),
-                h4("Trades using this signal and position management:"),
+                h4(paste0("Trades using MA signal and position management:")),
                 h6("(ProfitLoss calculation assumes $10 commission for each buy or sell)"),
                 div(style='height:240px; overflow-y: scroll',
                     tableOutput("outTrades")
