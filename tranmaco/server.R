@@ -136,7 +136,7 @@ shinyServer(
                                                slowDays=input$inFastSlowMavg[2]),
                                  signalGen="SignalGenMacoLongOnlyOpaat.R",
                                  startBalance=input$inAccBalance,
-                                 shift=0.02)
+                                 shift=0.04)
         })
         
         resultsHist <- eventReactive(input$inRunSimButton, {
