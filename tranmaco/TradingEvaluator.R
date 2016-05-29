@@ -76,6 +76,9 @@ makeTradeSignalsPlot <- function(ticker, quoteData, maType,
     priceData <- quoteData #getStockQuotes(ticker, startDate, endDate)
     priceData <- addSimColumns(priceData, signalGen, signalParms,
                                maType, startBalance)
+    
+    layout(rbind(1,2), heights=c(19,1))  # put legend on bottom 1/8th of chart
+    
     x <- as.Date(priceData$Date) # x axis values
     plot(x, y=priceData$Adj.Close, type="l", lwd=2,
          col='black', xlab="Date", ylab="Price ($ USD)")
@@ -96,10 +99,16 @@ makeTradeSignalsPlot <- function(ticker, quoteData, maType,
     points(entryDates, buySignals, pch=2, cex=1.75, col='green', lwd=2)
     fastMa <- paste0("Fast MA ", signalParms["fastDays"])
     slowMa <- paste0("Slow MA ", signalParms["slowDays"])
-    legend('bottom',
+    
+    # setup for no margins on the legend
+    par(mar=c(0, 0, 0, 0))
+    # c(bottom, left, top, right)
+    plot.new()
+    legend('center', 'groups',
            c("Adj.Close", fastMa, slowMa, "Buy Signal", "Sell Signal"),
            lty=c(1,1,1,0,0), pch=c(NA, NA, NA, 2, 6),
-           col=c('black', 'red', 'blue', 'green', 'red'))
+           col=c('black', 'red', 'blue', 'green', 'red'),
+           ncol=6, bty='n')
 }
 
 makeTradesResultsHist <- function(ticker, startDate, endDate, sim,
