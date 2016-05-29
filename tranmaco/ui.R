@@ -1,4 +1,10 @@
 
+configUrl <- './data/nonquotes/config.csv'
+config <- read.csv(configUrl)
+signal.content.file <- config[config$param == 'signal.content',]$value
+config.dir <- config[config$param == 'config.dir',]$value
+content.file <- paste0(config.dir, signal.content.file)
+signal.content <- readChar(content.file, file.info(content.file)$size)
 
 makeOptList <- function(labels, values) {
     names(values) <- labels
@@ -43,7 +49,7 @@ fluidPage(
         radioButtons('inMovAvg', label=h4("Moving Average (MA):"),
                      choices=maOptionsList, selected=1, inline = TRUE),
         sliderInput('inFastSlowMavg', h4("Fast & Slow MA Days"),
-                    min = 2, max = 100, value = c(9,18)),
+                    min = 2, max = 200, value = c(9,18)),
         numericInput('inAccBalance', 'Starting Account Balance:',
                      10000, min = 5000, max = 1000000, step = 500),
         selectInput('inPosMgmt', label=h4("Position Management:"),
@@ -66,21 +72,21 @@ fluidPage(
                 h4('Net Trading Profit/Loss:'),
                 verbatimTextOutput("outTradesNet")
             ),
-            tabPanel("Graphics", h3("Trades identified using this signal:"),
+            tabPanel("Graphics", h4("Trades identified using this signal:"),
                      h5(paste0("In the chart below, green triangles point to ",
                                "the BUY signals and are shifted down below ",
                                "the signals.  The red triangles point to the ",
                                "SELL signals and are shifted up above the ",
                                "signals to make them easier to see:")),
                      plotOutput("oidTradeSignalsPlot"),
-                     h3("Simulated trade results using identified trades:"),
+                     h4("Breakdown of Simulated Trade Results:"),
                      plotOutput("oidTradesResultsHist")
             ),
-            tabPanel("Signal", h3('TBD')
+            tabPanel("About", h3('TBD')
                      
-            ),
-            tabPanel("Quote Data", h3('TBD'))
-                     
+            )#,
+            #tabPanel("Quote Data", h3('TBD'))
+            #         
             )
         )
     )
