@@ -1,4 +1,9 @@
-<p>This signal requires specifying two parameters: a slow and a fast simple moving average (SMA) number of days.  If you are unfamiliar with what a simple moving average is, the link below describes it in detail:</p><p><a href=http://www.investopedia.com/terms/m/movingaverage.asp>http://www.investopedia.com/terms/m/movingaverage.asp</a></p><p>A simple moving average simply calculates the average price over n days and this average rolls forward looking back n days when calculating new values.  For example, if we wanted to calculate a 3 day SMA (aka SMA 3), it would look like this:</p>
+<h3>What does MACO stand for and what does the MACO Analyzer do?</h3>
+<p>MACO stand for Moving Average Cross-Over (MACO) and is a trading strategy which according to Alexander Elder <a href=http://www.wiley.com/WileyCDA/WileyTitle/productCd-1118443926.html>[1]</a>, dates back to shortly after WWII and credits Richard Donchian and J.M. Hurst as pioneers in it's use.  The MACO Analyzer allows a user to play with how the strategy works through simulation on historical data.  The MACO is a simple strategy with an elegant intuition making it easy to understand and a good canditate for an initial exploration into quantitative trading (QT).</p>
+
+<p>This signal requires specifying two parameters: a slow and a fast moving average number of days.  If you are unfamiliar with moving averages, the link below describes it in detail:</p><p><a href=http://www.investopedia.com/terms/m/movingaverage.asp>http://www.investopedia.com/terms/m/movingaverage.asp</a></p>
+
+<p>This demo implements two kinds of moving averages: Simple and Exponentional.  A simple moving average (SMA) calculates the average price over n days and this average rolls forward looking back n days when calculating new values.  For example, if we wanted to calculate a 3 day SMA (aka SMA 3), it would look like this:</p>
 <pre>
 Price  SMA 3
 -----  -----
@@ -8,4 +13,46 @@ Price  SMA 3
 41.45  41.92 = (42.50 + 41.82 + 41.45) / 3
 41.55  41.61 = (41.82 + 41.45 + 42.55) / 3
 41.43  41.48 = ...
-</pre><p>The larger the number of days used to calculate a SMA, the slower it reacts to changes in price because more history is used to calculate it.  Similarly, a fast SMA uses less days in its calculation and changes more quickly because less history is used in its calculation.</p><p>An SMA cross-over buy signal typically occurs when a fast SMA moves above a slow SMA.  A sell signal occurs under this strategy when the fast SMA drops below the slow SMA.</p>
+</pre>
+
+<p>The exponential moving average (EMA) is a little more complicated to compute, but has a simple interpretation. While the SMA equally weights all the prices in its calculation, the EMA puts more weight on the more recent prices making it more responsive to changes.  Details on how to do this calculation can be found here <a href=http://www.wiley.com/WileyCDA/WileyTitle/productCd-1118443926.html>[1]</a> or here <a href=http://www.dummies.com/how-to/content/how-to-calculate-exponential-moving-average-in-tra.html>[2]</a>.</p>
+
+<p>The larger the number of days n used to calculate a moving an MA (SMA or EMA), the slower it reacts to changes in price because more history is factored into the calculation.  Similarly, a fast MA factors in less days in its calculation and changes more quickly because recent prices drive the calculation.</p>
+
+<h3>How are buy and sell signals generated?</h3>
+<p>A buy signal occurs when a fast MA (SMA or EMA) moves above a slow MA.  A sell signal occurs under this strategy when the fast MA drops below the slow MA.  The user selects a fast n period and a slow n period (slow n > fast n) and uses the signals generated from that choice.  A more sophisticated user might run a number of simulations and select fast and slow n values based on cross-validation of a substantial historical data set.</p>
+
+<h3>User Selected Parameters</h3>
+<h4>Quick Start</h4>
+<h4>Company</h4>
+<h4>Quote Date Range</h4>
+<h4>Moving Average (MA)</h4>
+<h4>Fast & Slow MA Days</h4>
+<h4>Starting Account Balance</h4>
+<h4>Position Management</h4>
+<h4>Run Simulation</h4>
+
+
+<h3>Analyze Tab</h3>
+<h4>Quote Data Status</h4>
+<h4>Simulation Parameters</h4>
+<h4>Trades using MA...</h4>
+<h4>Net Trading Profit/Loss</h4>
+
+<h3>Visualize Tab</h3>
+<h4>Trades Identified Using This Signal</h4>
+<h4>Breakdown of Simulated Trade Results</h4>
+
+<h3>Source Code Tab</h3>
+<h4>TBD</h4>
+
+<h3>Custom Configuration</h3>
+<h4>TBD</h4>
+
+<h3></h3>
+
+<h3></h3>
+
+<h3></h3>
+
+<h3></h3>

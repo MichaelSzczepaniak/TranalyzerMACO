@@ -59,7 +59,7 @@ fluidPage(
     ),
     mainPanel(
         tabsetPanel(
-            tabPanel("Analyzer",
+            tabPanel("Analyze",
                 h4('Quote Data Status:'),
                 verbatimTextOutput("outQuoteDataStatus"),
                 h4('Simulation Parameters:'),
@@ -72,7 +72,7 @@ fluidPage(
                 h4('Net Trading Profit/Loss:'),
                 verbatimTextOutput("outTradesNet")
             ),
-            tabPanel("Graphics", h4("Trades identified using this signal:"),
+            tabPanel("Visualize", h4("Trades Identified Using This Signal:"),
                      h5(paste0("In the chart below, green triangles point to ",
                                "the BUY signals and are shifted down below ",
                                "the signals.  The red triangles point to the ",
@@ -82,11 +82,11 @@ fluidPage(
                      h4("Breakdown of Simulated Trade Results:"),
                      plotOutput("oidTradesResultsHist")
             ),
-            tabPanel("About", h3('TBD')
+            tabPanel("User Guide", HTML(signal.content)
+            ),
+            tabPanel("Source Code", 
+                     h3('TBD'))
                      
-            )#,
-            #tabPanel("Quote Data", h3('TBD'))
-            #         
             )
         )
     )
