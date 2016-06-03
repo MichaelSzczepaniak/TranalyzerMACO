@@ -30,22 +30,37 @@ Price  SMA 3
 <p></p>
 
 <h4>Company</h4>
-<p>The demo version of the app uses a select list populated with 10 companies: AAPL DIS, GE, JNJ, JPM, MRK, MSFT, NFLX, UNH and WMT.  Open, High, Low, and Close prices for each of these tickers from 2005-01-03 to 2016-05-24</p>
-<p></p>
-<h4>Quote Date Range</h4>
-<h4>Moving Average (MA)</h4>
-<h4>Fast & Slow MA Days</h4>
-<h4>Starting Account Balance</h4>
-<h4>Position Management</h4>
-<h4>Run Simulation</h4>
+<p>The demo version of the app uses a select list populated with 10 companies: AAPL DIS, GE, JNJ, JPM, MRK, MSFT, NFLX, UNH and WMT.  For each ticker, data for the High, Low, Open, Close and Adjusted Close prices along with daily trading volume for each of these tickers from 2005-01-03 to 2016-05-24 are available for use by the simulator.</p>
 
+<h4>Quote Date Range</h4>
+<p>This section determines the starting and ending dates of the simulation.  In the demo version, the earliest starting date is January 3, 2005 and the latest ending date is May 24, 2016.</p>
+
+<h4>Moving Average (MA)</h4>
+<p>This section determines which type of moving average the simulator should use to calculate its signals.  The EMA is more responsive to recent price changes, but with that responsiveness typically comes more frequent false signals <a href=https://www.youtube.com/watch?v=LiE1VgWdcQM>aka 'whipsaws'</a>.</p>
+
+<h4>Fast & Slow MA Days</h4>
+<p>These are the fast n and slow n days respectively as discussed above.  The left handle on the range widget sets the fast n days (which are always lower than the slow n days).  The smaller the value for fast n days, the more responsive the fast MA resulting in more cross-over signals the strategy will generate.</p>
+
+<h4>Starting Account Balance</h4>
+<p>This is the amount of starting capital the simulator uses.  The amount of each purchase or sale of shares is deducted or added to this balance respectively.  The number of shares bought or sold is determined by the <b>Position Managerment</b> setting described in the next section.</p>
+
+<h4>Position Management</h4>
+<p>This setting determines how many shares are purchased when a buy signal is given or how many shares are sold when a sell signal is given.  The demo has only one setting: AIAO-OPAAT-OL which stand for <i>"All in, all out, one position at a time, only long positions allowed"</i>.  This is the simpliest strategy where the maximum number of shares the current account balance can afford are purchased when a buy signal is given and all the currently held share are sold when a sell signal is given.</p>
+<p>Additional PM strategies are planned for the non-demo version of this app such as: absolute trailing stops, percent trailing stops, absolute loss, percent loss, and a variety of technical stops.</p>
+
+<h4>Run Simulation</h4>
+<p>Clicking this button will run a simulation based on the current settings.  You'll see an error in the last two fields of the Analyze tab if the Company is not set.</p>
 
 <h3>Analyze Tab</h3>
+This the default tab that is opened when the app is initially launched.  The first two fields report the setting to be used for the simulation.  The bottom two fields report the results of the simulation.
 <h4>Quote Data Status</h4>
+<p>Before a company in selected, this field will report <i>Select Company ticker to acquire quote data.</i>.  This message changes to report the company ticker and the date range once these fields are set.  A company must be selected before a simulation is run.  You'll see an error the bottom two fields if try to run a simulation without at least selecting the company ticker.</p>
 <h4>Simulation Parameters</h4>
+<p>This section reports the type of moving average, fast n and slow n days to be used in the simulation in a compact form: SMA for the simple moving average, EMA for exponential moving average followed by the fast and slow n in parenthesis. The next columns shows the starting account balance which is followed by the position management strategy.</p>
 <h4>Trades using MA...</h4>
+<p>This is table showing the results of the simulation. Each row describes a completed transaction with the buy and sell dates, the buy and sell prices, and the net profit or loss from the roundtrip transaction.</p>
 <h4>Net Trading Profit/Loss</h4>
-
+<p></p>
 <h3>Visualize Tab</h3>
 <h4>Trades Identified Using This Signal</h4>
 <h4>Breakdown of Simulated Trade Results</h4>
@@ -56,6 +71,7 @@ Price  SMA 3
 <h3>Custom Configuration</h3>
 <h4>TBD</h4>
 
+<p></p>
 <h3></h3>
 
 <h3></h3>
