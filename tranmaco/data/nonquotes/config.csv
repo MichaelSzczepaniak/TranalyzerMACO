@@ -1,3 +1,4 @@
 param,value
 config.dir,"./data/nonquotes/"
-signal.content,"descriptionSmaCross-over.html"
+signal.tab.content,"userGuideTabContent.html"
+source.tab.content,"sourceTabContent.html"

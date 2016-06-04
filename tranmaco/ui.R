@@ -1,10 +1,15 @@
 
 configUrl <- './data/nonquotes/config.csv'
 config <- read.csv(configUrl)
-signal.content.file <- config[config$param == 'signal.content',]$value
+signal.tab.content.file <- config[config$param == 'signal.tab.content',]$value
+source.tab.content.file <- config[config$param == 'source.tab.content',]$value
 config.dir <- config[config$param == 'config.dir',]$value
-content.file <- paste0(config.dir, signal.content.file)
-signal.content <- readChar(content.file, file.info(content.file)$size)
+signal.tab.content.file <- paste0(config.dir, signal.tab.content.file)
+source.tab.content.file <- paste0(config.dir, source.tab.content.file)
+signal.tab.content <- readChar(signal.tab.content.file,
+                               file.info(signal.tab.content.file)$size)
+source.tab.content <- readChar(source.tab.content.file,
+                               file.info(source.tab.content.file)$size)
 
 makeOptList <- function(labels, values) {
     names(values) <- labels
@@ -82,11 +87,10 @@ fluidPage(
                      h4("Breakdown of Simulated Trade Results:"),
                      plotOutput("oidTradesResultsHist")
             ),
-            tabPanel("User Guide", HTML(signal.content)
+            tabPanel("User Guide", HTML(signal.tab.content)
             ),
-            tabPanel("Source Code", 
-                     h3('TBD'))
-                     
+            tabPanel("Source Code", HTML(source.tab.content)
             )
         )
     )
+)
