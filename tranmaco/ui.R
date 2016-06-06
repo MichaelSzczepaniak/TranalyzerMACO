@@ -16,10 +16,18 @@ makeOptList <- function(labels, values) {
     return(as.list(values))
 }
 
-# Demo data default dates
-simStartDateMin = '2005-01-03'; simEndDateMax = '2016-05-24'
-simStartDate <- '2014-05-25'  # default to 2 yrs. of data
-simEndDate <- '2016-05-24'
+## Returns the date that's 10 years ago today in the format:
+## yyyy-mm-dd.
+tenYearsAgoToday <- function() {
+    today <- as.POSIXlt(Sys.Date())
+    today$year <- today$year - 10
+    return(as.character(today))
+}
+
+# Default dates to use with live data
+simEndDate <- as.character(Sys.Date())
+simStartDate <- as.character(Sys.Date() - 365)
+simStartDateMin = tenYearsAgoToday(); simEndDateMax = simEndDate
 
 # Get company drop down values
 companyDataUrl <- "./data"
@@ -42,17 +50,13 @@ fluidPage(
     headerPanel("MACO Analyzer"),
     sidebarPanel(
         # http://shiny.rstudio.com/gallery/selectize-examples.html example #6
-        selectizeInput('inTicker', label=h4("Company:"),
-                    choices=demoTickersList,
-                    options = list(
-                        placeholder = 'Select Ticker',
-                        onInitialize = I('function() { this.setValue(""); }')
-                    )),
+        textInput('inTicker', label=h4("Company:")),
         dateRangeInput('inQueryDateRange', label = h4("Quotes Date Range:"),
                        start=simStartDate, end=simEndDate,
                        min=simStartDateMin, max=simEndDateMax),
         radioButtons('inMovAvg', label=h4("Moving Average (MA):"),
                      choices=maOptionsList, selected=1, inline = TRUE),
+        # actionButton('inQueryQuotes', 'Get Quote Data'),
         sliderInput('inFastSlowMavg', h4("Fast & Slow MA Days"),
                     min = 2, max = 200, value = c(9,18)),
         numericInput('inAccBalance', 'Starting Account Balance:',
@@ -91,7 +95,7 @@ fluidPage(
             ),
             tabPanel('Source Code', HTML(source.tab.content)
             ),
-            selected = 'User Guide'
+            selected = 'Analyze'
         )
     )
 )

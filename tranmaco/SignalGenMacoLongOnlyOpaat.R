@@ -30,9 +30,10 @@ appendMAcolumns <- function(stockPrices, signalParms=c(fastDays=8, slowDays=16),
                             maType='SMA', calcCol='Adj.Close') {
     fastDays <- signalParms["fastDays"]
     slowDays <- signalParms["slowDays"]
-    # cat('appendMAcolumns: maType =', maType, '\n')
-    # cat('appendMAcolumns: fastDays=', fastDays, "| slowDays=", slowDays, '\n')
-    # cat('appendMAcolumns:  nrow(stockPrices)=', nrow(stockPrices), '\n')
+    cat('appendMAcolumns: maType =', maType, '\n')
+    cat('appendMAcolumns: fastDays=', fastDays, "| slowDays=", slowDays, '\n')
+    cat('appendMAcolumns:  nrow(stockPrices)=', nrow(stockPrices), '\n')
+    print(head(stockPrices))
     calcPrices <- stockPrices[, as.character(calcCol)]
     fastName <- "FastMa"
     slowName <- "SlowMa"
