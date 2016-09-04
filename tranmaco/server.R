@@ -42,20 +42,14 @@ shinyServer(
         output$outSimParams <- renderText({
             simConfig()
         })
-        
+
         getQuotes <- function() {
-            # cat(paste0('init ticker: [', input$inTicker, '], is.null=',
-            #            is.null(input$inTicker), ', length=',
-            #            length(input$inTicker), ', empty sting? ',
-            #            (input$inTicker == ''), '\n'
-            #            )
-            #     )
             startDateStr <- as.character(input$inQueryDateRange[1])
             endDateStr <- as.character(input$inQueryDateRange[2])
             pdat <- getDemoQuotes(input$inTicker, startDateStr, endDateStr)
             pdat
         }
-        
+
         getQuotesObj <- function() {
             quoteStatusMsg <- paste0('Select Company ticker to acquire quote data.')
             pdat <- NULL
@@ -75,7 +69,6 @@ shinyServer(
                                               ' quotes ', quoteDateRange,
                                               ' NOT acquired.')
                 }
-                
                 
             }
             
@@ -100,7 +93,6 @@ shinyServer(
                                     maType = getMaToken(),
                                     signalGen='SignalGenMacoLongOnlyOpaat.R',
                                     startBalance=input$inAccBalance)
-                
             } else {
                 data.frame(
                     Error_Message=c("Slow SMA days must be larger than Fast SMA days.",
