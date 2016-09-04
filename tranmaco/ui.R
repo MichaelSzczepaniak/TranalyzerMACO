@@ -1,15 +1,15 @@
 
 configUrl <- './data/nonquotes/config.csv'
 config <- read.csv(configUrl)
-signal.tab.content.file <- config[config$param == 'signal.tab.content',]$value
-source.tab.content.file <- config[config$param == 'source.tab.content',]$value
-config.dir <- config[config$param == 'config.dir',]$value
-signal.tab.content.file <- paste0(config.dir, signal.tab.content.file)
-source.tab.content.file <- paste0(config.dir, source.tab.content.file)
-signal.tab.content <- readChar(signal.tab.content.file,
-                               file.info(signal.tab.content.file)$size)
-source.tab.content <- readChar(source.tab.content.file,
-                               file.info(source.tab.content.file)$size)
+signal_tab_content_file <- config[config$param == 'signal_tab_content',]$value
+source_tab_content_file <- config[config$param == 'source_tab_content',]$value
+config_dir <- config[config$param == 'config_dir',]$value
+signal_tab_content_file <- paste0(config_dir, signal_tab_content_file)
+source_tab_content_file <- paste0(config_dir, source_tab_content_file)
+signal_tab_content <- readChar(signal_tab_content_file,
+                               file.info(signal_tab_content_file)$size)
+source_tab_content <- readChar(source_tab_content_file,
+                               file.info(source_tab_content_file)$size)
 
 makeOptList <- function(labels, values) {
     names(values) <- labels
@@ -87,9 +87,9 @@ fluidPage(
                      h4("Breakdown of Simulated Trade Results:"),
                      plotOutput("oidTradesResultsHist")
             ),
-            tabPanel("User Guide", HTML(signal.tab.content)
+            tabPanel("User Guide", HTML(signal_tab_content)
             ),
-            tabPanel("Source Code", HTML(source.tab.content)
+            tabPanel("Source Code", HTML(source_tab_content)
             )
         )
     )
