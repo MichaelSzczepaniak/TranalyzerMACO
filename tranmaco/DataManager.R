@@ -243,18 +243,19 @@ getSinglePeriodYqlQuotes <- function(ticker, startYYYY_MM_DD,
         Open <- as.numeric(xpathSApply(rootNode, "//Open", xmlValue))
         Close <- as.numeric(xpathSApply(rootNode, "//Close", xmlValue))
         Volume <- as.numeric(xpathSApply(rootNode, "//Volume", xmlValue))
+        Adj.Close <- as.numeric(xpathSApply(rootNode, "//Adj_Close", xmlValue))
         date.format <- "%Y-%m-%d"
         Date <- as.Date(xpathSApply(rootNode, "//Date", xmlValue), date.format)
         # If we pass in a populated dataframe, assume we need to append to it
         library(dplyr)
         if(is.null(dataFrame)) {
             df <- data.frame(Symbol=ticker, Date=as.character(Date),
-                             High, Low, Open, Close, Volume)
+                             High, Low, Open, Close, Volume, Adj.Close)
             df <- arrange(df, Date)
         }
         else {
             temp <- data.frame(Symbol=ticker, Date=as.character(Date),
-                               High, Low, Open, Close, Volume)
+                               High, Low, Open, Close, Volume, Adj.Close)
             temp <- arrange(temp, Date)
             df <- rbind(dataFrame, temp)
         }
@@ -332,12 +333,13 @@ getStockQuotes <- function(ticker,
                            maxAllowableYears=10,
                            dataDir='./data/') {
     sDateObj <- as.Date(startDate); eDateObj <- as.Date(endDate) # for comp's
-    # cat("getStockQuotes parameters:\n", "ticker=", ticker, "\n",
-    #     "startDate=", startDate, ", endDate=", endDate, "\n",
-    #     "maxAllowableYears=", maxAllowableYears, "\n")
+    cat("getStockQuotes parameters:\n", "ticker=", ticker, "\n",
+        "startDate=", startDate, ", endDate=", endDate, "\n",
+        "maxAllowableYears=", maxAllowableYears, "\n")
     # TODO handle invalid ticker
     today <- as.character(Sys.Date())
-    quoteCols <- c("Date", "High", "Low", "Open", "Close", "Volume")
+    quoteCols <- c("Date", "High", "Low", "Open", "Close", "Volume",
+                   "Adj.Close")
     # check if data for the ticker has been downloaded already
     tickerFile <- paste0(dataDir, ticker, ".csv")
     if(file.exists(tickerFile)) {
@@ -352,6 +354,8 @@ getStockQuotes <- function(ticker,
             # bring existing quotes up-to-date & append quote file.
             addStartDate <- as.character(endDataDate+1)
             addData <- getQuotesFromService(ticker, addStartDate, endDate)
+            cat('getStockQuotes: printing quotes received from getQuotesFromService\n')
+            print(head(addData))
             # leave quotes as-is if no add'l quotes come back 
             if(nrow(addData) > 0) {
                 quotes <- rbind(quotes[,quoteCols], addData[,quoteCols])
@@ -396,10 +400,10 @@ getStockQuotes <- function(ticker,
     else {
         # quote file doesn't exist yet: query, write, then read written file
         # TODO startDate and endDate allowable?
-        # cat('getStockQuotes: No', tickerFile, 'exists.',
-        #     'Getting quote between', startDate, 'and', endDate, '...\n')
+        cat('getStockQuotes: No', tickerFile, 'exists.',
+            'Getting quote between', startDate, 'and', endDate, '...\n')
         quotes <- getQuotesFromService(ticker, startDate, endDate)
-        # cat('getStockQuotes: Got quotes. Writing', tickerFile, '...')
+        cat('getStockQuotes: Got quotes for', ticker, '. Writing', tickerFile, '...')
         writeQuotes(tickers = c(ticker), startDate, endDate, dataDir)
         quotes <- read.csv(tickerFile, as.is=TRUE)
     }
@@ -416,7 +420,8 @@ getStockQuotes <- function(ticker,
 ## endDate - ending date for the quote in format yyyy-mm-dd
 writeQuotes <- function(tickers, startDate, endDate=as.character(Sys.Date()),
                         dataDir='./data/') {
-    quoteCols <- c("Date", "High", "Low", "Open", "Close", "Volume")
+    quoteCols <- c('Date', 'High', 'Low', 'Open', 'Close',
+                   'Volume', 'Adj.Close')
     for(i in 1:length(tickers)) {
         quotes <- getQuotesFromService(tickers[i], startDate, endDate)
         quotes <- quotes[, quoteCols] # don't need Symbol column
