@@ -24,27 +24,34 @@ source("TechIndicators.R")
 ## maType - Type of MA to use for signal generation: 'simple' or 'exponential'
 ##          Default = 'simple', anything else assumed to be 'exponential'.
 ## calcCol - name of the column that SMA will be calculated on. Possible values:
-##           Open, High, Low, Close, Volume.
+##           Open, High, Low, Close, Adj.Close, Volume.
 ## IMPORTANT: slowDays > fastDays
 appendMAcolumns <- function(stockPrices, signalParms=c(fastDays=8, slowDays=16),
-                            maType='simple', calcCol='Close') {
+                            maType='SMA', calcCol='Adj.Close') {
     fastDays <- signalParms["fastDays"]
     slowDays <- signalParms["slowDays"]
-    # cat('appendMAcolumns: fastDays=', fastDays, "| slowDays=", slowDays, '\n')
-    # cat('appendMAcolumns:  nrow(stockPrices)=', nrow(stockPrices), '\n')
+    cat('appendMAcolumns: maType =', maType, '\n')
+    cat('appendMAcolumns: fastDays=', fastDays, "| slowDays=", slowDays, '\n')
+    cat('appendMAcolumns:  nrow(stockPrices)=', nrow(stockPrices), '\n')
+    print(head(stockPrices))
     calcPrices <- stockPrices[, as.character(calcCol)]
     fastName <- "FastMa"
     slowName <- "SlowMa"
     # calcSma and calcEma functions reside in TechIndicators.R
-    if(maType =='simple') {
+    if(maType =='SMA') {
         stockPrices[, fastName] <- calcSma(calcPrices, fastDays)
         stockPrices[, slowName] <- calcSma(calcPrices, slowDays)
-    } else {
+    } else if(maType =='EMA') {
         stockPrices[, fastName] <- calcEma(calcPrices, fastDays)
         stockPrices[, slowName] <- calcEma(calcPrices, slowDays)
+    } else {
+        # TODO: WMA
+        cat('appendMAcolumns: WMA currently unsupported.')
+        return(NULL)
     }
-    
-    # cat('appendMAcolumns - first row of returned stockPrices:\n'); print(stockPrices[1,])
+    # cat('appendMAcolumns: maType =', maType)
+    # cat('appendMAcolumns - first few rows of returned stockPrices:\n');
+    # print(stockPrices[1:30,])
     return(stockPrices)
 }
 
@@ -87,8 +94,9 @@ getMaSignals <- function(prices, fastMas, slowMas, tol) {
 ## 
 ## stockPrices is assumed to have at least 4 columns:
 ## "Date", "FastMa", "SlowMa", and one named whatever is passed in for
-## for the calcCol parameter which will be'High', 'Low', 'Open' or 'Close'.
-appendSignals <- function(stockPrices, calcCol="Close", tol=0.003) {
+## for the calcCol parameter which will be'High', 'Low', 'Open' 'Close',
+## of 'Adj.Close'.
+appendSignals <- function(stockPrices, calcCol='Adj.Close', tol=0.003) {
     prices <- stockPrices[, as.character(calcCol)]
     smaPos <- getMaSignals(prices, stockPrices$FastMa, stockPrices$SlowMa, tol)
     stockPrices[, "Signal"] <- smaPos
@@ -97,7 +105,7 @@ appendSignals <- function(stockPrices, calcCol="Close", tol=0.003) {
     return(stockPrices)
 }
 
-## Appends two columns to pricesWithSignals and returns it updated data frame.
+## Appends two columns to pricesWithSignals and returns the updated data frame.
 ## Two new columns: Action which can have one of 3 values: HOLD, BUY or SELL &
 ##                  Open_Position which can be either TRUE or FALSE
 ##

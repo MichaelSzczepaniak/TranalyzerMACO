@@ -1,15 +1,27 @@
 
+configUrl <- './data/nonquotes/config.csv'
+config <- read.csv(configUrl)
+signal.tab.content.file <- config[config$param == 'signal.tab.content',]$value
+source.tab.content.file <- config[config$param == 'source.tab.content',]$value
+config.dir <- config[config$param == 'config.dir',]$value
+signal.tab.content.file <- paste0(config.dir, signal.tab.content.file)
+source.tab.content.file <- paste0(config.dir, source.tab.content.file)
+signal.tab.content <- readChar(signal.tab.content.file,
+                               file.info(signal.tab.content.file)$size)
+source.tab.content <- readChar(source.tab.content.file,
+                               file.info(source.tab.content.file)$size)
+
+makeOptList <- function(labels, values) {
+    names(values) <- labels
+    return(as.list(values))
+}
+
 ## Returns the date that's 10 years ago today in the format:
 ## yyyy-mm-dd.
 tenYearsAgoToday <- function() {
     today <- as.POSIXlt(Sys.Date())
     today$year <- today$year - 10
     return(as.character(today))
-}
-
-makeOptList <- function(labels, values) {
-    names(values) <- labels
-    return(as.list(values))
 }
 
 # Default dates to use with live data
@@ -19,6 +31,8 @@ simStartDateMin = tenYearsAgoToday(); simEndDateMax = simEndDate
 
 # Get company drop down values
 companyDataUrl <- "./data"
+demoQuoteDataFiles <- dir('./data', '*.csv')
+demoTickersList <- strsplit(demoQuoteDataFiles, '.csv')
 
 # Get moving average options for radio buttons
 movingAvgUrl <- "./data/nonquotes/moving_avgs.csv"
@@ -35,15 +49,16 @@ pmOptionsList <- makeOptList(pmOptions$PSS_Type[1], pmOptions$option[1])
 fluidPage(
     headerPanel("MACO Analyzer"),
     sidebarPanel(
-        textInput('ticker', label=h4("Company:")),
+        # http://shiny.rstudio.com/gallery/selectize-examples.html example #6
+        textInput('inTicker', label=h4("Company:")),
         dateRangeInput('inQueryDateRange', label = h4("Quotes Date Range:"),
                        start=simStartDate, end=simEndDate,
                        min=simStartDateMin, max=simEndDateMax),
-        actionButton('inQueryQuotes', 'Get Quote Data'),
         radioButtons('inMovAvg', label=h4("Moving Average (MA):"),
                      choices=maOptionsList, selected=1, inline = TRUE),
+        # actionButton('inQueryQuotes', 'Get Quote Data'),
         sliderInput('inFastSlowMavg', h4("Fast & Slow MA Days"),
-                    min = 2, max = 100, value = c(9,18)),
+                    min = 2, max = 200, value = c(9,18)),
         numericInput('inAccBalance', 'Starting Account Balance:',
                      10000, min = 5000, max = 1000000, step = 500),
         selectInput('inPosMgmt', label=h4("Position Management:"),
@@ -53,12 +68,12 @@ fluidPage(
     ),
     mainPanel(
         tabsetPanel(
-            tabPanel("Analyzer",
+            tabPanel('Analyze',
                 h4('Quote Data Status:'),
                 verbatimTextOutput("outQuoteDataStatus"),
                 h4('Simulation Parameters:'),
                 verbatimTextOutput("outSimParams"),
-                h4("Trades using this signal and position management:"),
+                h4(paste0("Trades using MA signal and position management:")),
                 h6("(ProfitLoss calculation assumes $10 commission for each buy or sell)"),
                 div(style='height:240px; overflow-y: scroll',
                     tableOutput("outTrades")
@@ -66,17 +81,21 @@ fluidPage(
                 h4('Net Trading Profit/Loss:'),
                 verbatimTextOutput("outTradesNet")
             ),
-            tabPanel("Graphics", h3("Trades identified using this signal:"),
-                     h5(paste0("In the chart below, green BUY signal triangles are ",
-                               "shifted down and red SELL triangles are shifted ",
-                               "up so signals are more visible:"))
-                     
+            tabPanel('Visualize', h4("Trades Identified Using This Signal:"),
+                     h5(paste0("In the chart below, green triangles point to ",
+                               "the BUY signals and are shifted down below ",
+                               "the signals.  The red triangles point to the ",
+                               "SELL signals and are shifted up above the ",
+                               "signals to make them easier to see:")),
+                     plotOutput("oidTradeSignalsPlot"),
+                     h4("Breakdown of Simulated Trade Results:"),
+                     plotOutput("oidTradesResultsHist")
             ),
-            tabPanel("Signal", h3('TBD')
-                     
+            tabPanel('User Guide', HTML(signal.tab.content)
             ),
-            tabPanel("Quote Data", h3('TBD'))
-                     
-            )
+            tabPanel('Source Code', HTML(source.tab.content)
+            ),
+            selected = 'Analyze'
         )
     )
+)

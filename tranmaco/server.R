@@ -5,7 +5,9 @@ source("StrategySimulator.R")
 shinyServer(
     function(input, output) {
         
-        simConfig <- function() {
+        ## Returns the string 'SMA' or 'EMA' depending on the radio button
+        ## setting
+        getMaToken <- function() {
             maToken <- 'SMA'
             # cat('input$inMovAvg =', input$inMovAvg, '\n')
             if(input$inMovAvg == 2) {
@@ -13,6 +15,13 @@ shinyServer(
             } else if(input$inMovAvg == 3) {
                 maToken <- 'WMA'  # TODO
             }
+            maToken
+        }
+        
+        ## Returns string that summarizes the selected configuratio parameters
+        ## for a simulation
+        simConfig <- function() {
+            maToken <- getMaToken()
             maToken <- sprintf('%s%s%s%s%s%s', maToken, '(', input$inFastSlowMavg[1],
                                ',', input$inFastSlowMavg[2], ')')
             # sab = starting account balance
@@ -20,6 +29,7 @@ shinyServer(
             if(input$inAccBalance != 10000) {
                 sabToken <- sprintf('%s%d', 'Start Bal=$', input$inAccBalance)
             }
+            # TODO need better way handle many position management strat's
             pmToken <- 'AIAO-OPAAT-OL'
             if(input$inPosMgmt == 2) {
                 pmToken <- 'AIAO-OPAAT-LAS'
@@ -33,45 +43,73 @@ shinyServer(
             params
         }
 
+        ## Sends config param string to ui
         output$outSimParams <- renderText({
             simConfig()
         })
         
+        ## Makes live calls to the Yahoo service for quote data and returns
+        ## quote data for the date range selected by user.
+        getQuotes <- function() {
+            # cat(paste0('init ticker: [', input$inTicker, '], is.null=',
+            #            is.null(input$inTicker), ', length=',
+            #            length(input$inTicker), ', empty sting? ',
+            #            (input$inTicker == ''), '\n'
+            #            )
+            #     )
+            startDateStr <- as.character(input$inQueryDateRange[1])
+            endDateStr <- as.character(input$inQueryDateRange[2])
+            pdat <- getStockQuotes(input$inTicker, startDateStr, endDateStr)
+            pdat
+        }
         
-        
-        output$outQuoteDataStatus <- eventReactive(input$inQueryQuotes, {
-            # http://stackoverflow.com/questions/33662033/shiny-how-to-make-reactive-value-initialize-with-default-value
-            if(input$inQueryQuotes > 0) {
+        ## Gets quote data, builds a quote status message, puts both of these
+        ## into a list which is returned to the caller.
+        getQuotesObj <- function() {
+            quoteStatusMsg <- paste0('Enter Company ticker to acquire quote data.')
+            pdat <- NULL
+            if(input$inTicker != '') {
                 startDateStr <- as.character(input$inQueryDateRange[1])
                 endDateStr <- as.character(input$inQueryDateRange[2])
-                pdat <- getStockQuotes(input$ticker, startDateStr, endDateStr)
+                # pdat <- getDemoQuotes(input$inTicker, startDateStr, endDateStr)
+                pdat <- getQuotes()
                 quoteDateRange <- sprintf('%s%s%s%s', 'from ',
                                           startDateStr, ' to ', endDateStr)
                 if(nrow(pdat) > 0) {
-                    sprintf('%s%s%s%s', input$ticker, ' quotes ', quoteDateRange,
-                            ' acquired.')
+                    quoteStatusMsg <- sprintf('%s%s%s%s', input$inTicker,
+                                              ' quotes ', quoteDateRange,
+                                              ' acquired.')
                 } else {
-                    sprintf('%s%s%s%s', input$ticker, ' quotes ', quoteDateRange,
-                            ' NOT acquired.')
+                    quoteStatusMsg <- sprintf('%s%s%s%s', input$inTicker,
+                                              ' quotes ', quoteDateRange,
+                                              ' NOT acquired.')
                 }
                 
                 
-            } else {
-                sprintf('%s', "NO QUOTE DATA: 'Get Quote Data' before 'Run Simulation'.")
             }
             
-        }, ignoreNULL = FALSE)
+            quoteData <- list(quoteStatusMsg, pdat)
+            
+            quoteData
+        }
         
+        ## Sends the quote status back to the user.
+        output$outQuoteDataStatus <- renderText({
+            quoteStatus <- getQuotesObj()[[1]]
+            quoteStatus
+        })
+        
+        ## Runs the simulation when the Run Simulation button is clicked
         runSim <- eventReactive(input$inRunSimButton, {
             if(input$inFastSlowMavg[2] > input$inFastSlowMavg[1]) {
-                sim <- doSimulation(input$ticker,
-                                    priceData=NULL,
-                                    as.character(input$inQueryDateRange[1]),
-                                    as.character(input$inQueryDateRange[2]),
+                sim <- doSimulation(ticker=input$ticker,
+                                    priceData=getQuotesObj()[[2]],
+                                    startDate=as.character(input$inQueryDateRange[1]),
+                                    endDate=as.character(input$inQueryDateRange[2]),
                                     signalParms=c(fastDays=input$inFastSlowMavg[1],
                                                   slowDays=input$inFastSlowMavg[2]),
-                                    maType = input$inMovAvg,
-                                    signalGen = 'SignalGenMacoLongOnlyOpaat.R',
+                                    maType = getMaToken(),
+                                    signalGen='SignalGenMacoLongOnlyOpaat.R',
                                     startBalance=input$inAccBalance)
                 
             } else {
@@ -97,6 +135,39 @@ shinyServer(
         }
         
         output$outTradesNet <- renderPrint(getNetPL())
+        
+        ## Creates the upper trade signals plot in Graphics tab
+        ## Note: makeTradeSignalsPlot impl'd in TradingEvaluator.R
+        tradeSignalPlot <- eventReactive(input$inRunSimButton, {
+            makeTradeSignalsPlot(input$inTicker, getQuotesObj()[[2]],
+                                 getMaToken(),
+                                 as.character(input$queryDateRange[1]),
+                                 as.character(input$queryDateRange[2]),
+                                 signalParms=c(fastDays=input$inFastSlowMavg[1],
+                                               slowDays=input$inFastSlowMavg[2]),
+                                 signalGen="SignalGenMacoLongOnlyOpaat.R",
+                                 startBalance=input$inAccBalance,
+                                 shift=0.04)
+        })
+        
+        resultsHist <- eventReactive(input$inRunSimButton, {
+            makeTradesResultsHist(input$ticker,
+                                  as.character(input$queryDateRange[1]),
+                                  as.character(input$queryDateRange[2]),
+                                  runSim(),
+                                  signalParms=c(fastDays=input$inFastSlowMavg[1],
+                                                slowDays=input$inFastSlowMavg[2]),
+                                  signalGen="SignalGenMacoLongOnlyOpaat.R",
+                                  startBalance=input$inAccBalance)
+        })
+        
+        output$oidTradeSignalsPlot <- renderPlot({
+            tradeSignalPlot()
+        })
+        
+        output$oidTradesResultsHist <- renderPlot({
+            resultsHist()
+        })
         
     }
 )
