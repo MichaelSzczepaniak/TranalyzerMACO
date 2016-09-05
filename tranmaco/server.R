@@ -51,20 +51,20 @@ shinyServer(
         getQuotes <- function() {
             startDateStr <- as.character(input$inQueryDateRange[1])
             endDateStr <- as.character(input$inQueryDateRange[2])
-            pdat <- getStockQuotes(input$inTicker, startDateStr, endDateStr)
+            pdat <- getDemoQuotes(input$inTicker, startDateStr, endDateStr)
             pdat
         }
         
         ## Gets quote data, builds a quote status message, puts both of these
         ## into a list which is returned to the caller.
         getQuotesObj <- function() {
-            quoteStatusMsg <- paste0('Enter Company ticker to acquire quote data.')
+            quoteStatusMsg <- paste0('Select Company ticker to acquire quote data.')
             pdat <- NULL
             if(input$inTicker != '') {
                 startDateStr <- as.character(input$inQueryDateRange[1])
                 endDateStr <- as.character(input$inQueryDateRange[2])
-                pdat <- getDemoQuotes(input$inTicker, startDateStr, endDateStr)
-                # pdat <- getQuotes()
+                # pdat <- getDemoQuotes(input$inTicker, startDateStr, endDateStr)
+                pdat <- getQuotes()
                 quoteDateRange <- sprintf('%s%s%s%s', 'from ',
                                           startDateStr, ' to ', endDateStr)
                 if(nrow(pdat) > 0) {
