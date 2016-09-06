@@ -81,9 +81,9 @@ getCompletedYearsBetweenDates <- function(startDate, endDate) {
     return(completedYears)
 }
 
-## This function is used to break a date range into a list of component date
-## ranges.  It returns a list of character vectors where each vector contains
-## two strings of the form yyyy-mm-dd.
+## This function is used to break a large date range into a list of component
+## date ranges.  It returns a list of character vectors where each vector
+## contains two strings of the form yyyy-mm-dd.
 ##
 ## Precondition: startDate precedes endDate in time
 ##
