@@ -18,7 +18,7 @@ shinyServer(
             maToken
         }
         
-        ## Returns string that summarizes the selected configuratio parameters
+        ## Returns string that summarizes the selected configuration parameters
         ## for a simulation
         simConfig <- function() {
             maToken <- getMaToken()
@@ -51,30 +51,24 @@ shinyServer(
         ## Makes live calls to the Yahoo service for quote data and returns
         ## quote data for the date range selected by user.
         getQuotes <- function() {
-            # cat(paste0('init ticker: [', input$inTicker, '], is.null=',
-            #            is.null(input$inTicker), ', length=',
-            #            length(input$inTicker), ', empty sting? ',
-            #            (input$inTicker == ''), '\n'
-            #            )
-            #     )
-            startDateStr <- as.character(input$inQueryDateRange[1])
-            endDateStr <- as.character(input$inQueryDateRange[2])
-            pdat <- getStockQuotes(input$inTicker, startDateStr, endDateStr)
+            start_date_str <- as.character(input$inQueryDateRange[1])
+            end_date_str <- as.character(input$inQueryDateRange[2])
+            pdat <- getStockQuotes(input$inTicker, start_date_str, end_date_str)
             pdat
         }
         
         ## Gets quote data, builds a quote status message, puts both of these
         ## into a list which is returned to the caller.
         getQuotesObj <- function() {
-            quoteStatusMsg <- paste0('Enter Company ticker to acquire quote data.')
+            quoteStatusMsg <- "Enter Company ticker to acquire quote data."
             pdat <- NULL
             if(input$inTicker != '') {
-                startDateStr <- as.character(input$inQueryDateRange[1])
-                endDateStr <- as.character(input$inQueryDateRange[2])
-                # pdat <- getDemoQuotes(input$inTicker, startDateStr, endDateStr)
+                start_date_str <- as.character(input$inQueryDateRange[1])
+                end_date_str <- as.character(input$inQueryDateRange[2])
+                # pdat <- getDemoQuotes(input$inTicker, start_date_str, end_date_str)
                 pdat <- getQuotes()
                 quoteDateRange <- sprintf('%s%s%s%s', 'from ',
-                                          startDateStr, ' to ', endDateStr)
+                                          start_date_str, ' to ', end_date_str)
                 if(nrow(pdat) > 0) {
                     quoteStatusMsg <- sprintf('%s%s%s%s', input$inTicker,
                                               ' quotes ', quoteDateRange,
@@ -84,8 +78,8 @@ shinyServer(
                                               ' quotes ', quoteDateRange,
                                               ' NOT acquired.')
                 }
-                
-                
+
+
             }
             
             quoteData <- list(quoteStatusMsg, pdat)
@@ -94,9 +88,9 @@ shinyServer(
         }
         
         ## Sends the quote status back to the user.
-        output$outQuoteDataStatus <- renderText({
-            quoteStatus <- getQuotesObj()[[1]]
-            quoteStatus
+        output$outQuoteDataStatus <- eventReactive(input$inQueryQuotes, {
+            quote_msg <- getQuotesObj()[[1]]
+            quote_msg
         })
         
         ## Runs the simulation when the Run Simulation button is clicked
