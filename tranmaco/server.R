@@ -54,7 +54,7 @@ shinyServer(
             start_date_str <- as.character(input$inQueryDateRange[1])
             end_date_str <- as.character(input$inQueryDateRange[2])
             # pdat <- getStockQuotes(input$inTicker, start_date_str, end_date_str)
-	        pdat <- getDemoQuotes(input$inTicker, startDateStr, endDateStr)
+	        pdat <- getDemoQuotes(input$inTicker, start_date_str, end_date_str)
             pdat
         }
         
