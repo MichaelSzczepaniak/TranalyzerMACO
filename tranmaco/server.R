@@ -53,7 +53,8 @@ shinyServer(
         getQuotes <- function() {
             start_date_str <- as.character(input$inQueryDateRange[1])
             end_date_str <- as.character(input$inQueryDateRange[2])
-            pdat <- getStockQuotes(input$inTicker, start_date_str, end_date_str)
+            # pdat <- getStockQuotes(input$inTicker, start_date_str, end_date_str)
+	        pdat <- getDemoQuotes(input$inTicker, startDateStr, endDateStr)
             pdat
         }
         
@@ -88,7 +89,7 @@ shinyServer(
         }
         
         ## Sends the quote status back to the user.
-        output$outQuoteDataStatus <- eventReactive(input$inQueryQuotes, {
+        output$outQuoteDataStatus <- renderText({
             quote_msg <- getQuotesObj()[[1]]
             quote_msg
         })
@@ -105,7 +106,6 @@ shinyServer(
                                     maType = getMaToken(),
                                     signalGen='SignalGenMacoLongOnlyOpaat.R',
                                     startBalance=input$inAccBalance)
-                
             } else {
                 data.frame(
                     Error_Message=c("Slow SMA days must be larger than Fast SMA days.",

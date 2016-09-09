@@ -1,9 +1,3 @@
-# install packages if needed
-# list.of.packages <- c('dplyr', 'readr', 'XML')
-# new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-# if(length(new.packages) > 0) install.packages(new.packages)
-# load libraries
-# lapply(list.of.packages, require, character.only=TRUE)  # load libs
 
 library(dplyr)
 library(readr)

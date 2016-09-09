@@ -30,6 +30,11 @@ start_date_default <- as.character(Sys.Date() - 365)
 earliest_start_date = tenYearsAgoToday()
 latest_end_date = end_date_default
 
+# Get company drop down values
+companyDataUrl <- "./data"
+demoQuoteDataFiles <- dir('./data', '*.csv')
+demoTickersList <- strsplit(demoQuoteDataFiles, '.csv')
+
 # Get moving average options for radio buttons
 moving_avg_url <- "./data/nonquotes/moving_avgs.csv"
 ma_options <- read.csv(moving_avg_url, stringsAsFactors = FALSE)
@@ -45,11 +50,15 @@ fluidPage(
     headerPanel("MACO Analyzer"),
     sidebarPanel(
         # http://shiny.rstudio.com/gallery/selectize-examples.html example #6
-        textInput('inTicker', label=h4("Ticker:")),
+        selectizeInput('inTicker', label=h4("Company:"),
+                    choices=demoTickersList,
+                    options = list(
+                        placeholder = 'Select Ticker',
+                        onInitialize = I('function() { this.setValue(""); }')
+                    )),
         dateRangeInput('inQueryDateRange', label = h4("Quotes Date Range:"),
                        start=start_date_default, end=end_date_default,
                        min=earliest_start_date, max=latest_end_date),
-        actionButton('inQueryQuotes', 'Get Quote Data'),
         radioButtons('inMovAvg', label=h4("Moving Average (MA):"),
                      choices=ma_options_list, selected=1, inline = TRUE),
         sliderInput('inFastSlowMavg', h4("Fast & Slow MA Days"),
@@ -63,7 +72,7 @@ fluidPage(
     ),
     mainPanel(
         tabsetPanel(
-            tabPanel("Analyzer",
+            tabPanel("Analyze",
                 h4('Quote Data Status:'),
                 verbatimTextOutput("outQuoteDataStatus"),
                 h4('Simulation Parameters:'),
@@ -76,7 +85,7 @@ fluidPage(
                 h4('Net Trading Profit/Loss:'),
                 verbatimTextOutput("outTradesNet")
             ),
-            tabPanel('Visualize', h4("Trades Identified Using This Signal:"),
+            tabPanel("Visualize", h4("Trades Identified Using This Signal:"),
                      h5(paste0("In the chart below, green triangles point to ",
                                "the BUY signals and are shifted down below ",
                                "the signals.  The red triangles point to the ",
@@ -86,9 +95,9 @@ fluidPage(
                      h4("Breakdown of Simulated Trade Results:"),
                      plotOutput("oidTradesResultsHist")
             ),
-            tabPanel('User Guide', HTML(signal_tab_content)
+            tabPanel("User Guide", HTML(signal_tab_content)
             ),
-            tabPanel('Source Code', HTML(source_tab_content)
+            tabPanel("Source Code", HTML(source_tab_content)
             )
         )
     )

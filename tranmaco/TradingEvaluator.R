@@ -1,21 +1,11 @@
 
 
-## Development convenience method. Just changes working dir to where it needs
-## to be for this project.  Add salt to taste...
-# setWorking <- function(laptopSys=TRUE) {
-#     dirSys <- "C:/data/"  # laptop
-#     if(!laptopSys) { dirSys <- "D:/" }  # workstation
-#     dirProject <- "dev/TradeAnalyzer"
-#     dirWorking <- paste0(dirSys, dirProject)
-#     setwd(dirWorking)
-# }
-
 ## 
 addSimColumns <- function(prices, signalGen, sigParms, maType, startBalance) {
     source(signalGen)
     # add MA cols and calc them based on closing price
-    cat('addSimColumns - first row of prices:\n'); print(prices[1,])
-    cat('\naddSimColumns - sigParms:\n'); print(sigParms)
+    # cat('addSimColumns - first row of prices:\n'); print(prices[1,])
+    # cat('\naddSimColumns - sigParms:\n'); print(sigParms)
     priceData <- appendMAcolumns(prices, sigParms, maType, calcCol="Adj.Close")
     priceData <- appendSignals(priceData) # add col of 1, -1, 0 signals
     priceData <- getActionsBHS(priceData) # add Actions & Open_Position col's
@@ -52,7 +42,7 @@ doSimulation <- function(ticker,
                          signalGen = "SignalGenMacoLongOnlyOpaat.R",
                          startBalance = 10000) {
     
-    cat('doSimulation - priceData[1:3,]:\n'); print(priceData[1:3,])
+    # cat('doSimulation - priceData[1,]:\n'); print(priceData[1,])
     
     # addSimColumns sources StrategySimulator.R for getNetTable
     priceData <- addSimColumns(priceData, signalGen, signalParms,
