@@ -7,7 +7,7 @@ Each strategy to be evaluated by the TA requires writing three components.  The 
 
 The **shiny_dep** (shiny deployment) branch of the app is hosted at [https://michael-szczepaniak.shinyapps.io/tranmaco/](https://michael-szczepaniak.shinyapps.io/tranmaco/)
 
-The current focus of the work on the **dev_fix_rtq** branch is to implement pulling data from **finance.yahoo.com** when this functionality has been implemented, it will be merged into the **master** branch and redeployed to shinyapps.io at the same url listed above.
+The current focus of the work on the **dev\_fix\_rtq** branch is to implement pulling data from **finance.yahoo.com**.  When this functionality has been implemented, it will be merged into the **master** branch and redeployed to shinyapps.io at the same url listed above.  The **dev\_cv** was created to do the cross-validation work for optimal MA values.
 
 ## Architecture
 The TAMACO is architected to be modular in that to implement a new strategy, you only need to write a new stratgey which conforms to the interface.
