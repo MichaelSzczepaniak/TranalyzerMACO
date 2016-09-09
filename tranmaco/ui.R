@@ -44,7 +44,24 @@ pm_options_list <- makeOptList(pm_options$PSS_Type[1], pm_options$option[1])
 fluidPage(
     headerPanel("MACO Analyzer"),
     sidebarPanel(
-        # http://shiny.rstudio.com/gallery/selectize-examples.html example #6
+        # Let user know app is computing:
+        # stackoverflow.com/questions/17325521#22475216
+        tags$head(tags$style(type="text/css", "
+                             #loadmessage {
+                             position: fixed;
+                             top: 0px;
+                             left: 0px;
+                             width: 100%;
+                             padding: 5px 0px 5px 0px;
+                             text-align: center;
+                             font-weight: bold;
+                             font-size: 100%;
+                             color: #000000;
+                             background-color: #CCFF66;
+                             z-index: 105;
+                             }
+                             ")),
+        
         textInput('inTicker', label=h4("Ticker:")),
         dateRangeInput('inQueryDateRange', label = h4("Quotes Date Range:"),
                        start=start_date_default, end=end_date_default,
@@ -58,7 +75,10 @@ fluidPage(
                      10000, min = 5000, max = 1000000, step = 500),
         selectInput('inPosMgmt', label=h4("Position Management:"),
                     choices=pm_options_list, selected=1),
-        actionButton('inRunSimButton', 'Run Simulation')
+        actionButton('inRunSimButton', 'Run Simulation'),
+        
+        conditionalPanel(condition="$('html').hasClass('shiny-busy')",
+                         tags$div("Working...",id="loadmessage"))
 
     ),
     mainPanel(
